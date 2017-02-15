@@ -3,6 +3,10 @@
 *.ko
 *.obj
 *.elf
+*_symbols.txt
+*.d
+
+.DS_Store
 
 # Precompiled Headers
 *.gch
