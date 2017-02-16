@@ -17,8 +17,17 @@ CC = $(CROSS_COMPILE)gcc
 AR = $(CROSS_COMPILE)ar
 SIZE = $(CROSS_COMPILE)size
 STRIP = $(CROSS_COMPILE)strip
+ifeq ($(OS),Windows_NT)
+$(error no gnu objcopy and objdump on your os)
+endif
+ifeq ($(shell uname -s),Linux)
 OBJCOPY = $(CROSS_COMPILE)objcopy
 OBJDUMP = $(CROSS_COMPILE)objdump
+endif
+ifeq ($(shell uname -s),Darwin)
+OBJCOPY = $(CROSS_COMPILE)gobjcopy
+OBJDUMP = $(CROSS_COMPILE)gobjdump
+endif
 SIZE = $(CROSS_COMPILE)size
 GDB = $(CROSS_COMPILE)gdb
 NM = $(CROSS_COMPILE)nm
