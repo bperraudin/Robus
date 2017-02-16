@@ -16,7 +16,7 @@
 
 int test_value = 0;
 unsigned short target_value = 0;
-vm_t *vm1, *vm2;
+vm_t *vm1, *vm2, *vm3;
 
 typedef enum {
     TARGET_CMD = WRITE_ID,
@@ -28,11 +28,29 @@ typedef enum {
 void rx_cb(msg_t *msg) {
     switch (msg->header.cmd) {
         case TEST_CMD :
-            test_value = ((int)msg->data[0] << 8) | (int)msg->data[1];
+            if (test_value == 0xCAFE) {
+                test_value = ((int)msg->data[1] << 8) | (int)msg->data[0];
+            }
+            else {
+                test_value = ((int)msg->data[0] << 8) | (int)msg->data[1];
+            }
         break;
         case TARGET_CMD :
         case NO_OVERLAP_TARGET_CMD:
             target_value = msg->header.target;
+        break;
+        default :
+            test_value = 0;
+        break;
+    }
+}
+
+void rx_cb_bis(msg_t *msg) {
+    switch (msg->header.cmd) {
+        case TEST_CMD :
+                if (test_value != 0xFECA) {
+                    test_value = 0xEFAC;
+                }
         break;
         default :
             test_value = 0;
@@ -58,11 +76,21 @@ unsigned char test_init(void) {
     return 0;
 }
 
+unsigned char add_vm(void) {
+    printf("\nAdd virtual module :\n");
+    vm3 = robus_module_create(rx_cb_bis, vm2->type, "separate cb");
+    if (test(vm3->rx_cb == rx_cb_bis)) return 1;
+    if (test(vm3->type == vm2->type)) return 1;
+    if (test(!strncmp(vm3->alias, "separate cb", 15))) return 1;
+    return 0;
+}
 
 unsigned char set_id_brdcst(void) {
     printf("\nSet ID with BROADCAST mode :\n");
     if (test(!set_extern_id(vm1, BROADCAST, BROADCAST_VAL, 0x000A))) return 1;
     if (test(vm1->id == 0x000A)) return 1;
+    if (test(vm2->id == 0x000A)) return 1;
+    if (test(vm3->id == 0x000A)) return 1;
     return 0;
 }
 
@@ -70,6 +98,9 @@ unsigned char set_id_type(void) {
     printf("\nSet ID in TYPE mode :\n");
     if (test(!set_extern_id(vm1, TYPE, vm2->type, 0x000B))) return 1;
     if (test(vm2->id == 0x000B)) return 1;
+    if (test(vm3->id == 0x000B)) return 1;
+    if (test(vm1->id == 0x000A)) return 1;
+    vm3->id = 0x000D;
     return 0;
 }
 
@@ -77,6 +108,7 @@ unsigned char set_id(void) {
     printf("\nSet ID in ID mode :\n");
     if (test(!set_extern_id(vm2, ID, vm1->id, 0x000C))) return 1;
     if (test(vm1->id == 0x000C )) return 1;
+    if (test(vm2->id == 0x000B )) return 1;
     return 0;
 }
 
@@ -101,6 +133,17 @@ unsigned char write_id_mode(void) {
     if (test(!robus_send(vm1, &msg))) return 1;
     if (test(test_value == 0xCAFE)) return 1;
     test_value = 0x0000;
+    if (test(!robus_send(vm2, &msg))) return 1;
+    if (test(test_value == 0xCAFE)) return 1;
+    test_value = 0x0000;
+    msg.header.target = vm2->id;
+    if (test(!robus_send(vm1, &msg))) return 1;
+    if (test(test_value == 0xCAFE)) return 1;
+    test_value = 0x0000;
+    if (test(!robus_send(vm2, &msg))) return 1;
+    if (test(test_value == 0xCAFE)) return 1;
+    test_value = 0x0000;
+
     return 0;
 }
 
@@ -113,7 +156,7 @@ unsigned char write_broadcast_mode(void) {
                  .data[0] = 0xCA,
                  .data[1] = 0xFE};
     if (test(!robus_send(vm1, &msg))) return 1;
-    if (test(test_value == 0xCAFE)) return 1;
+    if (test(test_value == 0xFECA)) return 1;
     test_value = 0x0000;
     return 0;
 }
@@ -138,45 +181,35 @@ unsigned char add_multicast(void) {
     if (test(!robus_send(vm1, &msg))) return 1;
     if (test(target_value == 0x000E)) return 1;
     target_value = 0x0000;
+
+    msg.header.cmd = TEST_CMD;
+    if (test(!robus_send(vm1, &msg))) return 1;
+    if (test(test_value == 0xCAFE)) return 1;
+    test_value = 0x0000;
+    add_multicast_target(vm2, 0x000E);
+    if (test(!robus_send(vm1, &msg))) return 1;
+    if (test(test_value == 0xFECA)) return 1;
+    test_value = 0x0000;
+
+    add_multicast_target(vm3, 0x00AE);
+    msg.header.target = 0x00AE;
+    if (test(!robus_send(vm1, &msg))) return 1;
+    if (test(test_value == 0xEFAC)) return 1;
+    test_value = 0x0000;
     return 0;
 }
-/*
-unsigned char add_virtual(void) {
-    printf("\nAdd a VIRTUAL target :\n");
-    add_virtual_target(0x000E);
-    if (test(ctx.virtual_target_bank[ctx.max_virtual_target] != 0x000E)) return 1;
-    msg_t msg = {.header.cmd = WRITE_ID,
-                 .header.target = 0x000E,
-                 .header.target_mode = ID,
-                 .header.size = 2,
-                 .data[0] = 0xCA,
-                 .data[1] = 0xFE};
-    if (test(!robus_send(vm1, &msg))) return 1;
-    if (test(ctx.id == 0xCAFE)) return 1;
-    add_virtual_target(0x00AE);
-    msg.header.target = 0x00AE;
-    msg.header.cmd = NO_OVERLAP_TARGET_CMD;
-    if (test(!robus_send(vm1, &msg))) return 1;
-    if (test(target_value == 0x00AE)) return 1;
-    msg.header.target = 0x000E;
-    if (test(!robus_send(vm1, &msg))) return 1;
-    if (test(target_value == 0x000E)) return 1;
-    target_value = 0x0000;
-    return 0;
-}*/
 
 int main(void) {
     printf("test sequences :\n");
 
     test_sequences(test_init);
-    //test_sequences(set_id_brdcst);
+    test_sequences(add_vm);
+    test_sequences(set_id_brdcst);
     test_sequences(set_id_type);
     test_sequences(set_id);
     test_sequences(write_id_mode);
-    //test_sequences(write_broadcast_mode);
-    /*test_sequences(add_multicast);
-    //test_sequences(add_virtual);
-    */
+    test_sequences(write_broadcast_mode);
+    test_sequences(add_multicast);
 
     return test_end();
 }

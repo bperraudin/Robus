@@ -14,6 +14,7 @@
 // Global variables
 context_t ctx;
 unsigned char keep = FALSE;
+unsigned char concernedmodules[MAX_VM_NUMBER] = {FALSE};
 // static timeout_t timeout; //TODO timeout management
 
 /**
@@ -82,7 +83,7 @@ void get_header(volatile unsigned char *data) {
                     break;
                 }
                 // Check all VM id
-                for (int i = 0; i <= ctx.vm_number; i++) {
+                for (int i = 0; i < ctx.vm_number; i++) {
                     keep = (CURRENTMSG.header.target == ctx.vm_table[i].id);
                     if (keep) {
                         ctx.alloc_msg[ctx.current_buffer] = i;
@@ -95,33 +96,35 @@ void get_header(volatile unsigned char *data) {
                 //check default type
                 if(CURRENTMSG.header.target == ctx.type) {
                     keep = TRUE;
-                    ctx.alloc_msg[ctx.current_buffer] = 0;
+                    concernedmodules[0] = TRUE;
                     ctx.data_cb = get_data;
                     break;
                 }
                 // Check all VM type
-                for (int i = 0; i <= ctx.vm_number; i++) {
-                    keep = (CURRENTMSG.header.target == ctx.vm_table[i].type);
-                    if (keep) {
-                        ctx.alloc_msg[ctx.current_buffer] = i;
+                for (int i = 0; i < ctx.vm_number; i++) {
+                    if (CURRENTMSG.header.target == ctx.vm_table[i].type) {
+                        keep = TRUE;
+                        concernedmodules[i] = TRUE;
                         ctx.data_cb = get_data;
-                        break;
                     }
                 }
             break;
             case BROADCAST:
-                keep = !(CURRENTMSG.header.target == BROADCAST_VAL);
+                keep = (CURRENTMSG.header.target == BROADCAST_VAL);
 				ctx.data_cb = get_data;
-            break;
-            case MULTICAST:
-                for (int i = 0; i <= ctx.vm_number; i++) {
-                    keep = (multicast_target_bank(&ctx.vm_table[i], CURRENTMSG.header.target));
-                    if (keep) { //TOOD manage multiple slave concerned
-                        ctx.alloc_msg[ctx.current_buffer] = i;
-                        break;
+                if (keep) {
+                    for (int i = 0; i < ctx.vm_number; i++) {
+                        concernedmodules[i] = TRUE;
                     }
                 }
-
+            break;
+            case MULTICAST:
+                for (int i = 0; i < ctx.vm_number; i++) {
+                    if (multicast_target_bank(&ctx.vm_table[i], CURRENTMSG.header.target)) { //TOOD manage multiple slave concerned
+                        keep = TRUE;
+                        concernedmodules[i] = TRUE;
+                    }
+                }
                 ctx.data_cb = get_data;
             break;
             default:
@@ -159,7 +162,23 @@ void get_data(volatile unsigned char *data) {
 					send_ack();
 				}
 				ctx.data_cb = get_header;
-				msg_complete();
+                //TODO a loop if not ID/IDACK
+                if (CURRENTMSG.header.target_mode == ID || CURRENTMSG.header.target_mode == IDACK) {
+                    msg_complete();
+                }
+                else {
+                    for (int i = 0; i < ctx.vm_number; i++) {
+                        if (concernedmodules[i]) {
+                            ctx.alloc_msg[ctx.current_buffer] = i;
+    				        msg_complete();
+                            concernedmodules[i] = FALSE;
+                        }
+                    }
+                }
+                ctx.current_buffer++;
+                if (ctx.current_buffer == MSG_BUFFER_SIZE) {
+                    ctx.current_buffer = 0;
+                }
 			} else
 				ctx.status.rx_error = TRUE;
 		}
@@ -199,7 +218,6 @@ void msg_complete() {
                 // Get and save a new given ID
                 CURRENTMODULE.id = (((unsigned short)CURRENTMSG.data[1]) |
                                    ((unsigned short)CURRENTMSG.data[0] << 8));
-                //printf("\nid of module number %d changed to 0x%04x \n",ctx.alloc_msg[ctx.current_buffer], CURRENTMODULE.id);
             break;
             case GET_ID:
             // call something...
@@ -226,5 +244,4 @@ void msg_complete() {
         // Call CM callback
         CURRENTMODULE.rx_cb(CURRENTMODULE.msg_pt);
     }
-    ctx.current_buffer++;
 }

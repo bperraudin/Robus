@@ -29,7 +29,7 @@ int test_end(void) {
         printf("\n\x1B[31m%d/%d test failed.\n\x1B[0m", test_failed, test_nb);
         return 1;
     }
-    printf("\n\x1B[32mall %d test pass\n\x1B[0m", test_nb);
+    printf("\n\x1B[32mall %d tests pass\n\x1B[0m", test_nb);
     return 0;
 }
 
