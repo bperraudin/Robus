@@ -5,6 +5,7 @@
 *.elf
 *_symbols.txt
 *.d
+*.bin
 
 .DS_Store
 
