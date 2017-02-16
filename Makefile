@@ -8,12 +8,23 @@ ROOT_PATH := .
 EXAMPLES_PATH := $(ROOT_PATH)/extra/examples
 HAL_PATH := $(ROOT_PATH)/robus/hal
 
+ifeq ($(OS),Windows_NT)
+$(error no gnu ls on your os)
+endif
+
+ifeq ($(shell uname -s),Linux)
 # HAL list, can be overriden via command line or ENV
 HAL_LIST?=$(shell ls --hide=*.mk $(HAL_PATH))
-
 # Examples list, can be overriden via command line or ENV
 EXAMPLES?=$(shell ls --hide=*.mk --hide=template --hide=.* --hide=sketches.* $(EXAMPLES_PATH))
+endif
 
+ifeq ($(shell uname -s),Darwin)
+# HAL list, can be overriden via command line or ENV
+HAL_LIST?=$(shell gls --hide=*.mk $(HAL_PATH))
+# Examples list, can be overriden via command line or ENV
+EXAMPLES?=$(shell gls --hide=*.mk --hide=template --hide=.* --hide=sketches.* $(EXAMPLES_PATH))
+endif
 
 # HAL name, can be overriden via command line or ENV
 HAL ?= stub
