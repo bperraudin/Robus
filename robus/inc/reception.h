@@ -5,11 +5,13 @@
 
 unsigned short crc(unsigned char* data, unsigned short size);
 
-// Callbacks
+// Callbacks reception
 void get_header(volatile unsigned char *data);
 void get_data(volatile unsigned char *data);
+void msg_complete(void);
+
+// Callbacks send
 void catch_ack(volatile unsigned char *data);
 
-void msg_complete(void);
 
 #endif /* _RECEPTION_H_ */

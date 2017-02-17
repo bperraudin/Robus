@@ -13,6 +13,7 @@
 #define MAX_VM_NUMBER 5
 #define MSG_BUFFER_SIZE 5
 
+
 #ifndef MODULETYPE
     #define MODULETYPE DEV_BOARD
 #endif

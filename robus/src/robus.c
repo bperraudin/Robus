@@ -11,6 +11,7 @@
 #include "context.h"
 #include "hal.h"
 
+
 context_t ctx;
 
 // Startup and network configuration
@@ -32,12 +33,12 @@ void robus_init(void) {
         ctx.alloc_msg[i] = -1;
     }
     ctx.current_buffer = 0;
-	
+
     // Status
     ctx.status = (status_t) {.rx_error = FALSE,
                              .unexpected_state = FALSE,
                              .warning = FALSE};
-	// Init hal
+  // Init hal
     hal_init();
 }
 

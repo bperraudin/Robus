@@ -1,21 +1,23 @@
 /**
- * \file poppyNetwork.h
- * \brief Poppy communication main include file.
+ * \file robus.h
+ * \brief Robus communication main include file.
  * \author Nicolas Rabault
  * \version 0.1
- * \date 22 Avril 2015
+ * \date 18 Fevrier 2017
  *
- * Include this file to use the poppy communication protocole.
+ * Include this file to use the robus communication protocol.
  *
  */
 
-#ifndef _POPPYNETWORK_H_
-#define _POPPYNETWORK_H_
+#ifndef _ROBUS_H_
+#define _ROBUS_H_
 
 #define MAX_ALIAS_SIZE 16
+#define MAX_DATA_MSG_SIZE 512
+#define MAX_MULTICAST_ADDRESS 256
 
 /**
- * \enum addr_mode_t
+ * \enum target_mode_t
  * \brief Message addressing mode enum.
  *
  * This structure is used to get the message addressing mode list.
@@ -62,9 +64,9 @@ typedef struct __attribute__((__packed__)){
     union {
         struct __attribute__((__packed__)){
             header_t header;              /*!< Header filed. */
-            unsigned char data[512];      /*!< Data with size known. */
+            unsigned char data[MAX_DATA_MSG_SIZE];      /*!< Data with size known. */
         };
-        unsigned char stream[512 + sizeof(header_t)]; /*!< unmaped option. */
+        unsigned char stream[sizeof(header_t) + MAX_DATA_MSG_SIZE]; /*!< unmaped option. */
     };
     union {
         unsigned short crc;
@@ -74,27 +76,32 @@ typedef struct __attribute__((__packed__)){
 
 typedef void (*RX_CB) (msg_t *msg);
 
+/**
+ * \struct vm_t
+ * \brief Virtual Module Structure
+ *
+ * This structure is used to manage virtual modules
+ * please refer to the documentation
+ */
 typedef struct {
     // Callback pointers
-        RX_CB rx_cb;        /*!< User side slave RX callback. */
+    RX_CB rx_cb;        /*!< User side slave RX callback. */
 
     // Module infomations
-        unsigned short id;       /*!< Module ID. */
-        unsigned char type;     /*!< Module type. */
-        char alias[MAX_ALIAS_SIZE];/*!< Module alias. */
+    unsigned short id;       /*!< Module ID. */
+    unsigned char type;     /*!< Module type. */
+    char alias[MAX_ALIAS_SIZE];/*!< Module alias. */
 
     // Variables
-        msg_t* msg_pt;          /*!< Message pointer. */
-        unsigned char max_multicast_target; /*!< Position pointer of the last multicast target. */
-        unsigned short multicast_target_bank[256]; /*!< multicast target bank. */
+    msg_t* msg_pt;          /*!< Message pointer. */
+    unsigned char max_multicast_target; /*!< Position pointer of the last multicast target. */
+    unsigned short multicast_target_bank[MAX_MULTICAST_ADDRESS]; /*!< multicast target bank. */
 
-    }vm_t;
+}vm_t;
 
 /**
- * \fn void poppyNetwork_init(void)
- * \brief Initialisation of the Poppy communication lib.
- *
- * \param rx_cb function pointer into the rx callback.
+ * \fn void robus_init(void)
+ * \brief Initialisation of the Robus communication lib.
  *
  */
 void robus_init(void);
@@ -106,7 +113,7 @@ void robus_init(void);
  * \param rx_cb function pointer into the rx callback.
  * \param type type reference of this module hardware.
  * \param alias string (15 caracters max).
- * 
+ *
  * \return virtual module object pointer.
  *
  */
@@ -121,4 +128,4 @@ vm_t* robus_module_create(RX_CB rx_cb, unsigned char type, const char *alias);
  */
 unsigned char robus_send(vm_t* vm, msg_t *msg);
 
-#endif /* _POPPYNETWORK_H_ */
+#endif /* _ROBUS_H_ */
