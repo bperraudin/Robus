@@ -206,6 +206,7 @@ void catch_ack(volatile unsigned char *data) {
  * \param *data byte received from serial
  */
 void msg_complete() {
+    CURRENTMODULE.message_available++;
     if (CURRENTMSG.header.target_mode == ID ||
         CURRENTMSG.header.target_mode == IDACK ||
         CURRENTMSG.header.target_mode == TYPE ||
@@ -230,15 +231,26 @@ void msg_complete() {
                 CURRENTMODULE.msg_pt = &CURRENTMSG;
 
                 // Call CM callback
-                CURRENTMODULE.rx_cb(CURRENTMODULE.msg_pt);
-
+                if (CURRENTMODULE.rx_cb != 0) {
+                    CURRENTMODULE.rx_cb(CURRENTMODULE.msg_pt);
+                    CURRENTMODULE.message_available--;
+                }
+                else {
+                    CURRENTMODULE.data_to_read = CURRENTMSG.header.size;
+                }
             break;
         }
-    } else {
+   } else {
         // set VM data
         CURRENTMODULE.msg_pt = &CURRENTMSG;
 
         // Call CM callback
-        CURRENTMODULE.rx_cb(CURRENTMODULE.msg_pt);
+        if (CURRENTMODULE.rx_cb != 0) {
+            CURRENTMODULE.rx_cb(CURRENTMODULE.msg_pt);
+            CURRENTMODULE.message_available--;
+        }
+        else {
+            CURRENTMODULE.data_to_read = CURRENTMSG.header.size;
+        }
     }
 }

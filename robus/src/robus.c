@@ -51,6 +51,8 @@ vm_t* robus_module_create(RX_CB rx_cb, unsigned char type, const char *alias) {
     ctx.vm_table[ctx.vm_number].rx_cb = rx_cb;
     ctx.vm_table[ctx.vm_number].type = type;
     ctx.vm_table[ctx.vm_number].id = DEFAULTID;
+    ctx.vm_table[ctx.vm_number].message_available = 0;
+    ctx.vm_table[ctx.vm_number].data_to_read = 0;
     for (i=0; i < MAX_ALIAS_SIZE-1; i++) {
         ctx.vm_table[ctx.vm_number].alias[i] = alias[i];
         if (ctx.vm_table[ctx.vm_number].alias[i] == '\0')
@@ -89,4 +91,23 @@ unsigned char robus_send(vm_t* vm, msg_t *msg) {
         while (!vm->msg_pt->ack);
     }
     return 0;
+}
+
+unsigned char robus_read(vm_t* vm) {
+    unsigned char data = 0;
+    if (vm->message_available > 1) {
+        ctx.status.rx_error = TRUE;
+    }
+    if (vm->message_available) {
+        if (vm->data_to_read > 0) {
+            data = vm->msg_pt->data[vm->msg_pt->header.size - vm->data_to_read--];
+            if (vm->data_to_read == 0) {
+                vm->message_available = 0;
+            }
+        }
+        else {
+            vm->message_available = 0;
+        }
+    }
+    return data;
 }

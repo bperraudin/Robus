@@ -95,7 +95,9 @@ typedef struct __attribute__((__packed__)){
     // Variables
     msg_t* msg_pt;          /*!< Message pointer. */
     unsigned char max_multicast_target; /*!< Position pointer of the last multicast target. */
-    unsigned short multicast_target_bank[MAX_MULTICAST_ADDRESS]; /*!< multicast target bank. */
+    unsigned short multicast_target_bank[256]; /*!< multicast target bank. */
+    unsigned char message_available; /*!< signal a new message available */
+    unsigned char data_to_read; /*!< data ready to be readed */
 
 }vm_t;
 
@@ -125,7 +127,19 @@ vm_t* robus_module_create(RX_CB rx_cb, unsigned char type, const char *alias);
  *
  * \param virtual module who send.
  * \param msg Message to send to the slave.
+ *
+ * \return send or not
  */
 unsigned char robus_send(vm_t* vm, msg_t *msg);
+
+/**
+ * \fn unsigned char robus_read(vm_t* vm, msg_t *msg)
+ * \brief  Send message function.
+ *
+ * \param virtual module who receive.
+ *
+ * \return a data
+ */
+unsigned char robus_read(vm_t* vm);
 
 #endif /* _ROBUS_H_ */

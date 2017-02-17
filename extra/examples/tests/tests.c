@@ -16,7 +16,7 @@
 
 int test_value = 0;
 unsigned short target_value = 0;
-vm_t *vm1, *vm2, *vm3;
+vm_t *vm1, *vm2, *vm3, *vm4;
 
 typedef enum {
     TARGET_CMD = WRITE_ID,
@@ -85,12 +85,23 @@ unsigned char add_vm(void) {
     return 0;
 }
 
+unsigned char add_nocb_vm(void) {
+    printf("\nAdd virtual module without cb :\n");
+    vm4 = robus_module_create(0, vm1->type, "no cb");
+    if (test(vm4->rx_cb == 0)) return 1;
+    if (test(vm4->type == vm1->type)) return 1;
+    if (test(!strncmp(vm4->alias, "no cb", 15))) return 1;
+    return 0;
+}
+
 unsigned char set_id_brdcst(void) {
     printf("\nSet ID with BROADCAST mode :\n");
     if (test(!set_extern_id(vm1, BROADCAST, BROADCAST_VAL, 0x000A))) return 1;
     if (test(vm1->id == 0x000A)) return 1;
     if (test(vm2->id == 0x000A)) return 1;
     if (test(vm3->id == 0x000A)) return 1;
+    if (test(vm4->id == 0x000A)) return 1;
+    vm4->id = 0x000E;
     return 0;
 }
 
@@ -100,6 +111,7 @@ unsigned char set_id_type(void) {
     if (test(vm2->id == 0x000B)) return 1;
     if (test(vm3->id == 0x000B)) return 1;
     if (test(vm1->id == 0x000A)) return 1;
+    if (test(vm4->id == 0x000E)) return 1;
     vm3->id = 0x000D;
     return 0;
 }
@@ -144,6 +156,33 @@ unsigned char write_id_mode(void) {
     if (test(test_value == 0xCAFE)) return 1;
     test_value = 0x0000;
 
+    return 0;
+}
+
+unsigned char write_id_mode_no_cb(void) {
+    printf("\nSend something in id_mode without callback :\n");
+    msg_t msg = {.header.cmd = TEST_CMD,
+                 .header.target = vm4->id,
+                 .header.target_mode = ID,
+                 .header.size = 2,
+                 .data[0] = 0xCA,
+                 .data[1] = 0xFE};
+
+    test_value = 0x0000;
+    if (test(!robus_send(vm2, &msg))) return 1;
+    if (test(test_value == 0x0000)) return 1;
+    if (test(vm4->data_to_read == msg.header.size)) return 1;
+    if (test(vm4->message_available > 0)) return 1;
+    int the_value = 0;
+    unsigned char i = 0;
+    while (vm4->message_available) {
+        the_value = (the_value << 8) | robus_read(vm4);
+        i++;
+    }
+    if (test(i == vm4->msg_pt->header.size)) return 1;
+    if (test(ctx.status.rx_error)) return 1;
+    if (test(!vm4->message_available)) return 1;
+    if (test(the_value == 0xCAFE)) return 1;
     return 0;
 }
 
@@ -204,10 +243,12 @@ int main(void) {
 
     test_sequences(test_init);
     test_sequences(add_vm);
+    test_sequences(add_nocb_vm);
     test_sequences(set_id_brdcst);
     test_sequences(set_id_type);
     test_sequences(set_id);
     test_sequences(write_id_mode);
+    test_sequences(write_id_mode_no_cb);
     test_sequences(write_broadcast_mode);
     test_sequences(add_multicast);
 
