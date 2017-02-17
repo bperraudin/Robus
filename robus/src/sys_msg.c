@@ -10,9 +10,6 @@
  * Please use it with caution
  */
 
-// Global variables
-context_t ctx;
-
 void send_ack(void) {
     unsigned char ack = TRUE;
     hal_transmit(&ack, 1);

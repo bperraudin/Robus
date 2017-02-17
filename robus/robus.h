@@ -83,7 +83,7 @@ typedef void (*RX_CB) (msg_t *msg);
  * This structure is used to manage virtual modules
  * please refer to the documentation
  */
-typedef struct {
+typedef struct __attribute__((__packed__)){
     // Callback pointers
     RX_CB rx_cb;        /*!< User side slave RX callback. */
 

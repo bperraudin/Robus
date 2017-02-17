@@ -2,10 +2,6 @@
 #include "reception.h"
 #include <stdio.h>
 
-// Global variables
-context_t ctx;
-
-
 /**
  * \fn unsigned char hal_transmit(unsigned char* data)
  * \brief write a data byte

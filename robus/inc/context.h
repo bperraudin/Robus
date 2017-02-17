@@ -10,13 +10,13 @@
 
 typedef void (*DATA_CB) (volatile unsigned char *data);
 
-typedef struct {
+typedef struct __attribute__((__packed__)){
     unsigned char rx_error : 1;
     unsigned char unexpected_state : 1;
     unsigned char warning : 1;
 } status_t;
 
-typedef struct {
+typedef struct __attribute__((__packed__)){
 
     // Variables
     DATA_CB data_cb;    /*!< Data management callback. */

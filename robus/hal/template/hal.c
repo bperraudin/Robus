@@ -1,9 +1,5 @@
 #include "hal.h"
 
-
-// Global variables
-context_t ctx;
-
 /**
  * \fn void hal_init(void)
  * \brief hardware configuration (clock, communication, DMA...)

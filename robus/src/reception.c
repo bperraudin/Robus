@@ -10,9 +10,6 @@
 #define CURRENTMSG ctx.msg[ctx.current_buffer]
 #define CURRENTMODULE ctx.vm_table[ctx.alloc_msg[ctx.current_buffer]]
 
-
-// Global variables
-context_t ctx;
 unsigned char keep = FALSE;
 unsigned char concernedmodules[MAX_VM_NUMBER] = {FALSE};
 // static timeout_t timeout; //TODO timeout management

@@ -11,7 +11,6 @@
 #include "context.h"
 #include "hal.h"
 
-
 context_t ctx;
 
 // Startup and network configuration
@@ -30,7 +29,7 @@ void robus_init(void) {
 
     // clear alloc_msg
     for (int i = 0; i < MSG_BUFFER_SIZE; i++) {
-        ctx.alloc_msg[i] = -1;
+        ctx.alloc_msg[i] = 0;
     }
     ctx.current_buffer = 0;
 
