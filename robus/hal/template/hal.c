@@ -39,17 +39,3 @@ void id_update(unsigned short id) {
     /*address register*/ = (ctx.id << 1);
     // Write your ID on EEprom
 }
-
-
-/**
- * \fn void alias_update(unsigned char id[16])
- * \brief update the slave address
- *
- * \param alias new address
- *
- */
-void alias_update(unsigned char alias[16]) {
-    for (unsigned char i=0; i < 16; i++)
-        ctx.alias[i] = alias[i];
-    // Write your alias on EEprom
-}

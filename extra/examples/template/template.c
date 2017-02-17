@@ -1,21 +1,21 @@
 /**
  * \file template.c
- * \brief Poppy module application side template.
+ * \brief Robus module application side template.
  * \author Nicolas Rabault
  * \version 0.1
  * \date 22 Avril 2015
  *
- * Please feel free to copy this template and use it at base for your new Poppy
+ * Please feel free to copy this template and use it at base for your new Robus module
  * module application.
  */
 
 
 
 /**
- * This is the minimal include you will need to use poppy_com in a module
+ * This is the minimal include you will need to use Robus in a module
  * application
  */
-#include "poppyNetwork.h"
+#include "robus.h"
 
 /**
  * \enum msg_dir_t
@@ -59,7 +59,32 @@ void rx_cb(msg_t *msg) {
  * \return integer
  */
 int main(void) {
-    poppyNetwork_init(rx_cb);
+    vm_t *vm1, *vm2;
+    msg_t msg;
+
+    robus_init(rx_cb);
+
+    /*
+     * Module management with callback
+     */
+    // creation
+    vm1 = robus_module_create(rx_cb, (your module Type), "alias name");
+    // send a message
+    robus_send(vm1, &msg);
+    // reception have to be managed in "rx_cb" callback.
+
+    /*
+     * Module management without callback
+     */
+    // creation
+    vm2 = robus_module_create(0, (your module Type), "alias name");
+    // send a message
+    robus_send(vm2, &msg);
+    // reception
+    while (vm2->message_available) {
+        //catch a byte.
+        data = robus_read(vm2);
+    }
 
     /*
      * Add your main code here.

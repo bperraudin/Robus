@@ -110,7 +110,7 @@ void robus_init(void);
 
 /**
  * \fn vm_t* robus_module_create(RX_CB rx_cb, unsigned char type, unsigned char *alias)
- * \brief Initialisation of the Poppy communication lib.
+ * \brief Initialisation of the Robus communication lib.
  *
  * \param rx_cb function pointer into the rx callback.
  * \param type type reference of this module hardware.
