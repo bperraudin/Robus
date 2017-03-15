@@ -45,11 +45,11 @@ unsigned short crc(unsigned char* data, unsigned short size) {
  */
 void get_header(volatile unsigned char *data) {
     static unsigned short data_count = 0;
-	
-/*	if (timeout_ended(&timeout)){  //TODO timeout management
-		data_count = 0;
-	}
-	timeout_init(&timeout, 20);*/
+    
+/*  if (timeout_ended(&timeout)){  //TODO timeout management
+        data_count = 0;
+    }
+    timeout_init(&timeout, 20);*/
     // Catch a byte.
     CURRENTMSG.header.unmap[data_count++] = *data;
 
@@ -108,7 +108,7 @@ void get_header(volatile unsigned char *data) {
             break;
             case BROADCAST:
                 keep = (CURRENTMSG.header.target == BROADCAST_VAL);
-				ctx.data_cb = get_data;
+                ctx.data_cb = get_data;
                 if (keep) {
                     for (int i = 0; i < ctx.vm_number; i++) {
                         concernedmodules[i] = TRUE;
@@ -139,26 +139,26 @@ void get_header(volatile unsigned char *data) {
  */
 void get_data(volatile unsigned char *data) {
     static unsigned short data_count = 0;
-	
-/*	if (timeout_ended(&timeout)){  //TODO timeout management
-		data_count = 0;
-		keep = FALSE;
-		ctx.data_cb = get_header;
-		return;
-	}
-	timeout_init(&timeout, 20);*/
+    
+/*  if (timeout_ended(&timeout)){  //TODO timeout management
+        data_count = 0;
+        keep = FALSE;
+        ctx.data_cb = get_header;
+        return;
+    }
+    timeout_init(&timeout, 20);*/
 
     CURRENTMSG.data[data_count] = *data;
 
     if (data_count > CURRENTMSG.header.size) {
-		if (keep) {
-			CURRENTMSG.crc = ((unsigned short)CURRENTMSG.data[CURRENTMSG.header.size]) |
-						                      ((unsigned short)CURRENTMSG.data[CURRENTMSG.header.size + 1] << 8); 
-			if (CURRENTMSG.crc == crc(CURRENTMSG.stream, CURRENTMSG.header.size + sizeof(header_t))) {
-				if (CURRENTMSG.header.target_mode == IDACK) {
-					send_ack();
-				}
-				ctx.data_cb = get_header;
+        if (keep) {
+            CURRENTMSG.crc = ((unsigned short)CURRENTMSG.data[CURRENTMSG.header.size]) |
+                                              ((unsigned short)CURRENTMSG.data[CURRENTMSG.header.size + 1] << 8); 
+            if (CURRENTMSG.crc == crc(CURRENTMSG.stream, CURRENTMSG.header.size + sizeof(header_t))) {
+                if (CURRENTMSG.header.target_mode == IDACK) {
+                    send_ack();
+                }
+                ctx.data_cb = get_header;
                 //TODO a loop if not ID/IDACK
                 if (CURRENTMSG.header.target_mode == ID || CURRENTMSG.header.target_mode == IDACK) {
                     msg_complete();
@@ -167,7 +167,7 @@ void get_data(volatile unsigned char *data) {
                     for (int i = 0; i < ctx.vm_number; i++) {
                         if (concernedmodules[i]) {
                             ctx.alloc_msg[ctx.current_buffer] = i;
-    				        msg_complete();
+                            msg_complete();
                             concernedmodules[i] = FALSE;
                         }
                     }
@@ -176,11 +176,11 @@ void get_data(volatile unsigned char *data) {
                 if (ctx.current_buffer == MSG_BUFFER_SIZE) {
                     ctx.current_buffer = 0;
                 }
-			} else
-				ctx.status.rx_error = TRUE;
-		}
-		ctx.data_cb = get_header;
-		keep = FALSE;
+            } else
+                ctx.status.rx_error = TRUE;
+        }
+        ctx.data_cb = get_header;
+        keep = FALSE;
         data_count = 0;
         return;
     }

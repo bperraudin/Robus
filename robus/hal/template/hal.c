@@ -26,16 +26,3 @@ unsigned char hal_transmit(unsigned char* data, unsigned short size) {
     }
     return 0;
 }
-
-/**
- * \fn void id_update(unsigned short id)
- * \brief update the slave address
- *
- * \param id new address
- *
- */
-void id_update(unsigned short id) {
-    ctx.id = id;
-    /*address register*/ = (ctx.id << 1);
-    // Write your ID on EEprom
-}

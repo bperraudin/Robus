@@ -7,7 +7,7 @@
 
 #include "mod_list.h"
 
-#define DEFAULTID 0x01
+#define DEFAULTID 0x00
 #define PROTOCOL_REVISION 0
 #define BROADCAST_VAL 0x0FFF
 #define MAX_VM_NUMBER 5

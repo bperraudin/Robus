@@ -15,7 +15,6 @@ typedef enum {
 }com_state_t;
 
 void hal_init(void);
-void id_update(unsigned short id);
 
 unsigned char hal_transmit(unsigned char* data, unsigned short size);
 

@@ -3,7 +3,7 @@
 
 /*
  * All applicativ side message should have a structure like :
- * ADDR - REGISTER - SIZE - DATA[512] - CHECKSUM
+ * HEADER - DATA[MAX_DATA_MSG_SIZE] - CHECKSUM (ACK)
  */
 typedef enum {
     GET_ID,              /*!< Reply with ID. */

@@ -24,32 +24,3 @@ unsigned char hal_transmit(unsigned char* data, unsigned short size) {
 void hal_init(void) {
     // I2C configuration
 }
-
-/**
- * \fn void id_update(unsigned short id)
- * \brief update the slave address
- *
- * \param id new address
- *
- */
-void id_update(unsigned short id) {
-    ctx.id = id;
-    /*
-     * TORO(NR) : Write this ID on EEPROM and use it as default at
-     *            reboot (do this after debug)
-    */
-}
-
-/**
- * \fn void alias_update(unsigned char id[16])
- * \brief update the slave address
- *
- * \param alias new address
- *
- */
-/*void alias_update(unsigned char alias[16]) {
-    for (unsigned char i=0; i < 16; i++)
-        ctx.alias[i] = alias[i];
-    // Write your alias on EEprom
-}*/
-
