@@ -22,7 +22,7 @@ Robus is designed to be connected to many systems or devices. You will be able t
 
 ### Extendable
 
-If the technology you need is not already available on the Robus module list, no problem, Robus allows you to design your own by simply conforming to our API and guidelines. 
+If the technology you need is not already available on the Robus module list, no problem, Robus allows you to design your own by simply conforming to our API and guidelines.
 
 TODO: A bit more details on what we need to do
 TODO: Link to API/guidelines
@@ -55,6 +55,6 @@ Follow [this tutorial](extra/doc/developers.md) to learn how.
 
 ## Installation
 
-On Mac you will nedd to install 2 more things : 
+On Mac you will nedd to install 2 more things :
 - `brew install coreutils`
 - `brew install crosstool-ng`
