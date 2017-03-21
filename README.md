@@ -9,7 +9,7 @@ Building robots is really cool but can become really complex, you will need stro
 
 We want to allow you to build your own robot according to your level and experience. This is made possible by Robus, our unified modular architecture dedicated to robotics.
 
-Robus reduces the time between an idea to the prototype. It provides a unified messaging achitecture for modular robotics, all modules can be connected on the same 5 wires bus conatining both power and 2 communication bus. The network can self-discover module and their topology. Robus differentiating attributes are:
+Robus reduces the time between an idea to the prototype. It provides a unified messaging achitecture for modular robotics, all modules can be connected on the same 5 wires bus containing both power and 2 communication bus. The network can self-discover module and their topology. Robus differentiating attributes are:
 - TODO
 - TODO
 - TODO
@@ -29,24 +29,32 @@ TODO: Link to API/guidelines
 
 ## How do I use Robus?
 
-> I just want to realize my ideas by creating my robot quikly.
+> I just want to test my idea by building a functional robot quikly.
 
-You will probably just need to use standard module and high level programing interface such as Scratch or Python.
-Follow [this tutorials](extra/doc/beginers.md).
+You just need to use standard modules and one of our high level programing interfaces such as Scratch or Python.
 
-> I want to create my robot and mastering with presision his behavior.
+Follow [this tutorials](extra/doc/beginners.md) to learn how.
 
-You will need to combine high level programming langage such as Scratch or Python and low level embeded code.
-Robus allow you to create low level behavior localized on specific module and acess it easily using high level languages.
-Follow [this tutorial](extra/doc/experimented.md) to learn how.
+> I want to create my robot and master each and every details of the robot's behavior.
 
-> My needs are very specific, I want to make my own modules.
+In addition to our high level programming interfaces, you will need to modify some low level embeded code in the modules. Robus allows you to create low level behavior localized on each specific module. This is vastly facilitated by the Robus messaging system freeing you from the cumbersome protocol writting process and module/service identification.
 
-You will need to understand how to create your hown module and how Robus work for debugging.
-Follow [this tutorial](extra/doc/developers.md).
+Follow [this tutorial](extra/doc/intermediates.md) to learn how.
 
+> I want to develop a new sensor or actuator, can I prototype quickly a new module.
 
+TODO: Prottyping board will be available with the chip embeded by easy access to the pins...
+
+Follow [this tutorial](extra/doc/advanced.md) to learn how.
+
+> My needs are even more specific, I want to develop mass-produced modules.
+
+You will need to understand how Robus works and can be integrate in new electronics designs, fortunatly you will see great help in our debugging and sniffing tools.
+
+Follow [this tutorial](extra/doc/developers.md) to learn how.
+
+## Installation
 
 On Mac you will nedd to install 2 more things : 
-`brew install coreutils`
-`brew install crosstool-ng`
+- `brew install coreutils`
+- `brew install crosstool-ng`
