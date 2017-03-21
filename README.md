@@ -1,16 +1,33 @@
 # Robus
-Robus, the robust RObot BUS
+Robus, the robust **RO**bot **BUS**
 
-Build robots is a really cool things but really complex, you will need really good knowledge in electronics design, mechanical design, low level, and high level programming.
-**Pollen Robotics want to simplify it.**
+Building robots is really cool but can become really complex, you will need strong knowledge in electronics design, mechanical design, and both low level and high level programming.
 
-##Robus objectives
-Robus allow anyone to build his own robot whatever the level he have. This is possible by using an unified architecture dedicated to robotics allowing to combine a big range of modules easily.
-If the technology you need is not already available on the Robus module list, no problem, Robus allow you to design your own using conception tools (like this lib).
-Robus hve been created to be easily connected to any exixtent system or device. You will be able to control your robot trought wifi using your computer or trought Bluetooth using your tablet. Your robot can also control your connected objects or other robot system such as Lego mindstorm or Robotis motors.
-You can manage you robot using Arduino style low level code, high level language such as python, or both to have the perfect combination between performance and mantainability.
+**Pollen Robotics wants to simplify it.**
 
-To continue to discover this system corespondantly to your needs, how do you want to use Robus?
+## Robus objectives
+
+We want to allow you to build your own robot according to your level and experience. This is made possible by Robus, our unified modular architecture dedicated to robotics.
+
+Robus reduces the time between an idea to the prototype. It provides a unified messaging achitecture for modular robotics, all modules can be connected on the same 5 wires bus conatining both power and 2 communication bus. The network can self-discover module and their topology. Robus differentiating attributes are:
+- TODO
+- TODO
+- TODO
+
+TODO: Explain this better: "You can manage you robot using Arduino style low level code, high level language such as python, or both to have the perfect combination between performance and mantainability."
+
+### Connection to the outside world
+
+Robus is designed to be connected to many systems or devices. You will be able to control your robot via Wifi or Bleutooth using your computer or your tablet. Robus will also be able to connect with other Robus based robots or others complemetary achitectures like Lego Mindstorm or Robotis motors.
+
+### Extendable
+
+If the technology you need is not already available on the Robus module list, no problem, Robus allows you to design your own by simply conforming to our API and guidelines. 
+
+TODO: A bit more details on what we need to do
+TODO: Link to API/guidelines
+
+## How do I use Robus?
 
 > I just want to realize my ideas by creating my robot quikly.
 
