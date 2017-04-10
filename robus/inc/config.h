@@ -1,5 +1,9 @@
 /*
- * This file contain default configuration of the project.
+ * config.h
+ *
+ * Created: 14/02/2017 11:53:28
+ *  Author: Nicolas Rabault
+ *  Abstract: default configuration of the project.
  */
 
 #ifndef _CONFIG_H_
@@ -17,14 +21,5 @@
 #ifndef MODULETYPE
     #define MODULETYPE DEV_BOARD
 #endif
-
-#ifndef MAINCLOCK
-    #define MAINCLOCK 16000000
-#endif
-
-#ifndef MAX_TRIES
-    #define MAX_TRIES 5
-#endif
-
 
 #endif /* _CONFIG_H_ */

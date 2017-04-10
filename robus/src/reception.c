@@ -1,3 +1,12 @@
+/*
+ * reception.c
+ *
+ * Created: 14/02/2017 11:53:28
+ *  Author: Nicolas Rabault
+ *  Abstract: reception state machine
+ */
+//#define DEBUG
+
 #include "reception.h"
 #include "hal.h"
 #include "target.h"
@@ -5,7 +14,9 @@
 #include "time.h"
 //#include "test_board.h"
 
+#ifdef DEBUG
 #include <stdio.h>
+#endif
 
 #define CURRENTMSG ctx.msg[ctx.current_buffer]
 #define CURRENTMODULE ctx.vm_table[ctx.alloc_msg[ctx.current_buffer]]
@@ -56,13 +67,15 @@ void get_header(volatile unsigned char *data) {
     // Check if we have all we need.
     if (data_count == (sizeof(header_t))) {
 
-        // printf("*******header data*******\n");
-        // printf("protocol : 0x%04x\n", CURRENTMSG.header.protocol);       /*!< Protocol version. */
-        // printf("target : 0x%04x\n", CURRENTMSG.header.target);        /*!< Target address, it can be (ID, Multicast/Broadcast, Type). */
-        // printf("target_mode : 0x%04x\n", CURRENTMSG.header.target_mode);    /*!< Select targeting mode (ID, ID+ACK, Multicast/Broadcast, Type). */
-        // printf("source : 0x%04x\n", CURRENTMSG.header.source);        /*!< Source address, it can be (ID, Multicast/Broadcast, Type). */
-        // printf("cmd : 0x%04x\n", CURRENTMSG.header.cmd);                 /*!< msg definition. */
-        // printf("size : 0x%04x\n", CURRENTMSG.header.size);                /*!< Size of the data field. */
+#ifdef DEBUG
+        printf("*******header data*******\n");
+        printf("protocol : 0x%04x\n", CURRENTMSG.header.protocol);       /*!< Protocol version. */
+        printf("target : 0x%04x\n", CURRENTMSG.header.target);        /*!< Target address, it can be (ID, Multicast/Broadcast, Type). */
+        printf("target_mode : 0x%04x\n", CURRENTMSG.header.target_mode);    /*!< Select targeting mode (ID, ID+ACK, Multicast/Broadcast, Type). */
+        printf("source : 0x%04x\n", CURRENTMSG.header.source);        /*!< Source address, it can be (ID, Multicast/Broadcast, Type). */
+        printf("cmd : 0x%04x\n", CURRENTMSG.header.cmd);                 /*!< msg definition. */
+        printf("size : 0x%04x\n", CURRENTMSG.header.size);                /*!< Size of the data field. */
+#endif
         // Reset the catcher.
         data_count = 0;
         // Reset the msg allocation

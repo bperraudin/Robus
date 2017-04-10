@@ -1,3 +1,10 @@
+/*
+ * context.h
+ *
+ * Created: 14/02/2017 11:53:28
+ *  Author: Nicolas Rabault
+ *  Abstract: shared structures containg the module states
+ */
 #ifndef _CONTEXT_H_
 #define _CONTEXT_H_
 

@@ -1,4 +1,11 @@
-#ifndef _RECEPTION_H_
+/*
+ * reception.h
+ *
+ * Created: 14/02/2017 11:53:28
+ *  Author: Nicolas Rabault
+ *  Abstract: reception state machine header.
+ */
+ #ifndef _RECEPTION_H_
 #define _RECEPTION_H_
 
 #include "context.h"

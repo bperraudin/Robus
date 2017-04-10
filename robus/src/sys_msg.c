@@ -1,3 +1,10 @@
+/*
+ * sys_msg.c
+ *
+ * Created: 14/02/2017 11:53:28
+ *  Author: Nicolas Rabault
+ *  Abstract: protocol system message management.
+ */
 #include "robus.h"
 #include "sys_msg.h"
 #include "hal.h"

@@ -1,4 +1,11 @@
-#ifndef _SYS_MSG_H_
+/*
+ * sys_msg.h
+ *
+ * Created: 14/02/2017 11:53:28
+ *  Author: Nicolas Rabault
+ *  Abstract: protocol system message management header.
+ */
+ #ifndef _SYS_MSG_H_
 #define _SYS_MSG_H_
 
 #include "context.h"

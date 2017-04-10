@@ -1,3 +1,10 @@
+/*
+ * cmd.h
+ *
+ * Created: 14/02/2017 11:53:28
+ *  Author: Nicolas Rabault
+ *  Abstract: Protocol level command list
+ */
 #ifndef _CMD_H_
 #define _CMD_H_
 

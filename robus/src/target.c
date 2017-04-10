@@ -1,4 +1,11 @@
-#include "target.h"
+/*
+ * target.c
+ *
+ * Created: 14/02/2017 11:53:28
+ *  Author: Nicolas Rabault
+ *  Abstract: manage multicast address bank
+ */
+ #include "target.h"
 
 unsigned char multicast_target_bank(vm_t* vm, unsigned short val) {
     unsigned char i;
