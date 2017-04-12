@@ -9,8 +9,6 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
-#include "mod_list.h"
-
 #define DEFAULTID 0x00
 #define PROTOCOL_REVISION 0
 #define BROADCAST_VAL 0x0FFF
