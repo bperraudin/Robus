@@ -3,7 +3,7 @@
 #include <avr/interrupt.h>
 
 #define USART_BAUDRATE 9600ul
-#define UBRR_VALUE (MAINCLOCK/(USART_BAUDRATE<<4))-1
+#define UBRR_VALUE (F_CPU/(USART_BAUDRATE<<4))-1
 
 ISR(USART_RX_vect)
 {
