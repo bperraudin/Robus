@@ -16,6 +16,12 @@
 #define MAX_DATA_MSG_SIZE 512
 #define MAX_MULTICAST_ADDRESS 256
 
+enum {
+    NULLBOARD,
+    DEV_BOARD,
+    MOTOR_BOARD
+}module_list_t;
+
 /**
  * \enum target_mode_t
  * \brief Message addressing mode enum.

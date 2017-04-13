@@ -39,3 +39,9 @@ extra/Docs/*
 # Debug files
 *.dSYM/
 *.su
+
+# Platform IO
+.pioenvs
+.piolibdeps
+.clang_complete
+.gcc-flags.json
