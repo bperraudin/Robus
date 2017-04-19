@@ -1,6 +1,5 @@
-#include "robus.h"
-
-#include "inc/sys_msg.h"
+#include <robus.h>
+#include <sys_msg.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -12,11 +11,10 @@ int id = 1;
 
 
 typedef enum {
-    TARGET_CMD = WRITE_ID,
     TEST_CMD = PROTOCOL_CMD_NB,
     NO_OVERLAP_TARGET_CMD,
     MODULE_PROTOCOL_NB
-}module_register_t;
+} module_register_t;
 
 void rx_cb(msg_t *msg) {
     printf("Module %d got a message\n", id);

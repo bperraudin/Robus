@@ -1,0 +1,7 @@
+{
+    "name": "robus",
+    "version": "0.0.0",
+    "build": {
+        "extraScript": "extra_script.py"
+    }
+}
