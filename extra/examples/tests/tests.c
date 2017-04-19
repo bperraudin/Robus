@@ -195,7 +195,7 @@ unsigned char write_broadcast_mode(void) {
                  .data[0] = 0xCA,
                  .data[1] = 0xFE};
     if (test(!robus_send(vm1, &msg))) return 1;
-    if (test(test_value == 0xFECA)) return 1;
+    if (test(test_value == 0xCAFE)) return 1;
     test_value = 0x0000;
     return 0;
 }
