@@ -6,7 +6,7 @@
 void hal_loop();
 
 typedef enum {
-    TEST_CMD = PROTOCOL_CMD_NB,
+    TEST_CMD,
     NO_OVERLAP_TARGET_CMD,
     MODULE_PROTOCOL_NB
 } module_register_t;

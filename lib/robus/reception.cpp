@@ -9,6 +9,7 @@
 
 #include "reception.h"
 #include "hal.h"
+#include "cmd.h"
 #include "target.h"
 #include "sys_msg.h"
 #include "time.h"
@@ -56,7 +57,7 @@ unsigned short crc(unsigned char* data, unsigned short size) {
  */
 void get_header(volatile unsigned char *data) {
     static unsigned short data_count = 0;
-    
+
 /*  if (timeout_ended(&timeout)){  //TODO timeout management
         data_count = 0;
     }
@@ -152,7 +153,7 @@ void get_header(volatile unsigned char *data) {
  */
 void get_data(volatile unsigned char *data) {
     static unsigned short data_count = 0;
-    
+
 /*  if (timeout_ended(&timeout)){  //TODO timeout management
         data_count = 0;
         keep = FALSE;
@@ -166,7 +167,7 @@ void get_data(volatile unsigned char *data) {
     if (data_count > CURRENTMSG.header.size) {
         if (keep) {
             CURRENTMSG.crc = ((unsigned short)CURRENTMSG.data[CURRENTMSG.header.size]) |
-                                              ((unsigned short)CURRENTMSG.data[CURRENTMSG.header.size + 1] << 8); 
+                                              ((unsigned short)CURRENTMSG.data[CURRENTMSG.header.size + 1] << 8);
             if (CURRENTMSG.crc == crc(CURRENTMSG.stream, CURRENTMSG.header.size + sizeof(header_t))) {
                 if (CURRENTMSG.header.target_mode == IDACK) {
                     send_ack();
@@ -242,6 +243,7 @@ void msg_complete() {
             default:
                 // set VM data
                 CURRENTMODULE.msg_pt = &CURRENTMSG;
+                CURRENTMSG.header.cmd -= PROTOCOL_CMD_NB;
 
                 // Call CM callback
                 if (CURRENTMODULE.rx_cb != 0) {
@@ -259,7 +261,9 @@ void msg_complete() {
 
         // Call CM callback
         if (CURRENTMODULE.rx_cb != 0) {
+            CURRENTMSG.header.cmd -= PROTOCOL_CMD_NB;
             CURRENTMODULE.rx_cb(CURRENTMODULE.msg_pt);
+            CURRENTMSG.header.cmd += PROTOCOL_CMD_NB;
             CURRENTMODULE.message_available--;
         }
         else {

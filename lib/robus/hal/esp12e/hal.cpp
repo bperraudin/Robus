@@ -26,15 +26,18 @@ void hal_init(void) {
   while (WiFiMulti.run() != WL_CONNECTED) {
       delay(500);
   }
+  IPAddress ip = WiFi.localIP();
 #ifdef DEBUG
   Serial.println("Connected to the Wifi.");
   Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
+  Serial.println(ip);
 #endif
 
-  if (!client.connect(broker_host, broker_port)) {
+  while (!client.connect(broker_host, broker_port)) {
+    #ifdef DEBUG
       Serial.println("Connection to the broker failed.");
-      return;
+    #endif
+      delay(500);
   }
 #endif
 

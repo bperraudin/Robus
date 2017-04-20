@@ -34,7 +34,7 @@ unsigned char set_extern_id(vm_t* vm, target_mode_t target_mode, unsigned short 
     msg.data[1] = newid;
     msg.data[0] = (newid <<8);
 
-    if (robus_send(vm, &msg))
+    if (robus_send_sys(vm, &msg))
         return 1;
     return 0;
 }

@@ -139,6 +139,17 @@ vm_t* robus_module_create(RX_CB rx_cb, unsigned char type, const char *alias);
 unsigned char robus_send(vm_t* vm, msg_t *msg);
 
 /**
+ * \fn unsigned char robus_send_sys(vm_t* vm, msg_t *msg)
+ * \brief  Send system message function.
+ *
+ * \param virtual module who send.
+ * \param msg Message to send to the slave.
+ *
+ * \return send or not
+ */
+unsigned char robus_send_sys(vm_t* vm, msg_t *msg);
+
+/**
  * \fn unsigned char robus_read(vm_t* vm, msg_t *msg)
  * \brief  Send message function.
  *

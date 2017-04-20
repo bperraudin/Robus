@@ -10,6 +10,7 @@
 #include "reception.h"
 #include "context.h"
 #include "hal.h"
+#include "cmd.h"
 
 // Creation of the robus context. This variable is used in all files of this lib.
 context_t ctx;
@@ -24,7 +25,7 @@ void robus_init(void) {
     ctx.id = DEFAULTID;
     // VOID Module type
     ctx.type = NULLBOARD;
-    // Clear message allocation buffer table 
+    // Clear message allocation buffer table
     for (int i = 0; i < MSG_BUFFER_SIZE; i++) {
         ctx.alloc_msg[i] = 0;
     }
@@ -70,7 +71,8 @@ vm_t* robus_module_create(RX_CB rx_cb, unsigned char type, const char *alias) {
     return &ctx.vm_table[ctx.vm_number++];
 }
 
-unsigned char robus_send(vm_t* vm, msg_t *msg) {
+
+unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
     // Compute the full message size based on the header size info.
     unsigned short full_size = sizeof(header_t) + msg->header.size;
     unsigned short crc_val = 0;
@@ -98,6 +100,13 @@ unsigned char robus_send(vm_t* vm, msg_t *msg) {
         // In the same time if we don't have to do anything else we just can wait here...
         while (!vm->msg_pt->ack);
     }
+    return 0;
+}
+
+unsigned char robus_send(vm_t* vm, msg_t *msg) {
+    msg->header.cmd += PROTOCOL_CMD_NB;
+    robus_send_sys(vm, msg);
+    msg->header.cmd -= PROTOCOL_CMD_NB;
     return 0;
 }
 
