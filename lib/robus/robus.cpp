@@ -105,9 +105,9 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
 
 unsigned char robus_send(vm_t* vm, msg_t *msg) {
     msg->header.cmd += PROTOCOL_CMD_NB;
-    robus_send_sys(vm, msg);
+    unsigned char ret = robus_send_sys(vm, msg);
     msg->header.cmd -= PROTOCOL_CMD_NB;
-    return 0;
+    return ret;
 }
 
 unsigned char robus_read(vm_t* vm) {

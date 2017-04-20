@@ -208,7 +208,7 @@ unsigned char add_multicast(void) {
                  .header.size = 2,
                  .data[0] = 0xCA,
                  .data[1] = 0xFE};
-    if (test(!robus_send_sys(vm1, &msg))) return 1;
+    if (test(!robus_send(vm1, &msg))) return 1;
     if (test(target_value == 0x000E)) return 1;
     add_multicast_target(vm1, 0x00AE);
     msg.header.target = 0x00AE;
