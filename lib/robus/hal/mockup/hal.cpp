@@ -31,7 +31,7 @@ void hal_init(void) {
     snprintf(addr, sizeof(addr), "tcp://localhost:%d", BROKER_PORT);
     zmq_connect(broker, addr);
 
-    s_send(broker, "register");
+    s_send(broker, (char *)"register");
     char *msg = s_recv(broker);
     int port = atoi(msg);
     free(msg);
