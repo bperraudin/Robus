@@ -25,6 +25,13 @@ void robus_init(void) {
     ctx.id = DEFAULTID;
     // VOID Module type
     ctx.type = NULLBOARD;
+
+    // init detection structure
+    // No detection already done
+    ctx.detection.detection_end = FALSE;
+    // init PTP line detection status
+    ctx.detection.keepline = NO_DETECT;
+
     // Clear message allocation buffer table
     for (int i = 0; i < MSG_BUFFER_SIZE; i++) {
         ctx.alloc_msg[i] = 0;

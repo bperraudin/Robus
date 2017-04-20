@@ -11,6 +11,7 @@
 #include "config.h"
 #include "robus.h"
 #include "cmd.h"
+#include "detection.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -30,6 +31,7 @@ typedef struct __attribute__((__packed__)){
     status_t status;    /*!< Status. */
     unsigned short id;       /*!< Module ID. */
     unsigned char type;     /*!< Module type. */
+    unsigned char detection_mode;
 
     //Virtual module management
     vm_t vm_table[MAX_VM_NUMBER];       /*!< Virtual Module table. */

@@ -228,8 +228,31 @@ void msg_complete() {
         switch (CURRENTMSG.header.cmd) {
             case WRITE_ID:
                 // Get and save a new given ID
-                CURRENTMODULE.id = (((unsigned short)CURRENTMSG.data[1]) |
-                                   ((unsigned short)CURRENTMSG.data[0] << 8));
+                if (CURRENTMSG.header.target_mode == BROADCAST &
+                    ctx.detection.keepline != NO_DETECT &
+                    !ctx.detection.detection_end) {
+
+                    // We are on topology detection mode, and this is our turn
+                    // Save id for the next module
+                    ctx.vm_table[ctx.detection.vm_number].id =
+                        (((unsigned short)CURRENTMSG.data[1]) |
+                        ((unsigned short)CURRENTMSG.data[0] << 8));
+                    // Check if that was the last virtual module
+                    if (ctx.detection.vm_number == ctx.vm_number) {
+                        ctx.detection.detection_end = TRUE;
+                        if (ctx.detection.keepline == BRANCHA)
+                            unsigned char poke (BRANCHB); // TODO
+                        else
+                            unsigned char poke (BRANCHA); // TODO
+                    }
+                    else {
+                        ctx.detection.vm_number++;
+                    }
+                }
+                else {
+                    CURRENTMODULE.id = (((unsigned short)CURRENTMSG.data[1]) |
+                                       ((unsigned short)CURRENTMSG.data[0] << 8));
+                }
             break;
             case GET_ID:
             // call something...
