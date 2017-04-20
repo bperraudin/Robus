@@ -39,6 +39,7 @@ typedef enum {
      * THIRD_MODULE_REGISTER,
      * ...
      */
+    LED,
     MODULE_REGISTER_NB
 }module_register_t;
 
@@ -53,6 +54,12 @@ void rx_cb(msg_t *msg) {
     /*
      * Add your RX code here.
      */
+     if (msg->header.cmd == LED)
+         if (msg->data[0])
+             PORTB |= (1<<PORTB5);
+         if (!msg->data[0])
+             PORTB &= ~(1<<PORTB5);
+
 }
 
 
@@ -63,43 +70,45 @@ void rx_cb(msg_t *msg) {
  * \return integer
  */
 int main(void) {
-    vm_t *vm1, *vm2;
-    msg_t msg;
+    vm_t *vm1;
     robus_init();
     //Blink debug
     DDRB |= (1<<DDB5); //Set the 6th bit on PORTB (i.e. PB5) to 1 => output
-    while(1)
-    {
-        PORTB |= (1<<PORTB5);    //Turn 6th bit on PORTB (i.e. PB5) to 1 => on
-        _delay_ms(1000);        //Delay for 1000ms => 1 sec
-        PORTB &= ~(1<<PORTB5);    //Turn 6th bit on PORTB (i.e. PB5) to 0 => off
-        _delay_ms(1000);        //Delay for 1000ms => 1 sec
-    }
+    // while(1)
+    // {
+    //     PORTB |= (1<<PORTB5);    //Turn 6th bit on PORTB (i.e. PB5) to 1 => on
+    //     _delay_ms(1000);        //Delay for 1000ms => 1 sec
+    //     PORTB &= ~(1<<PORTB5);    //Turn 6th bit on PORTB (i.e. PB5) to 0 => off
+    //     _delay_ms(1000);        //Delay for 1000ms => 1 sec
+    // }
 
     /*
      * Module management with callback
      */
     // creation
     vm1 = robus_module_create(rx_cb, DEV_BOARD, "alias1");
-    // send a message
-    robus_send(vm1, &msg);
     // reception have to be managed in "rx_cb" callback.
 
     /*
-     * Module management without callback
-     */
-    // creation
-    vm2 = robus_module_create(0, DEV_BOARD, "alias2");
-    // send a message
-    robus_send(vm2, &msg);
-    // reception
-    while (vm2->message_available) {
-        //catch a byte.
-        char data = robus_read(vm2);
-    }  
-    /*
      * Add your main code here.
      */
+     msg_t msg = {.header.target = vm1->id,
+                  .header.cmd = LED,
+                  .header.target_mode = ID,
+                  .header.size = 1};
+     while(1)
+     {
+        //  PORTB |= (1<<PORTB5);    //Turn 6th bit on PORTB (i.e. PB5) to 1 => on
+        //  _delay_ms(1000);        //Delay for 1000ms => 1 sec
+        //  PORTB &= ~(1<<PORTB5);    //Turn 6th bit on PORTB (i.e. PB5) to 0 => off
+        //  _delay_ms(1000);        //Delay for 1000ms => 1 sec
+        msg.data[0] = 1;
+        robus_send(vm1, &msg);
+        _delay_ms(1000);
+        msg.data[0] = 0;
+        robus_send(vm1, &msg);
+        _delay_ms(1000);
+     }
 
     return 0;
 }
