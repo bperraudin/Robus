@@ -9,8 +9,6 @@
 #include "sys_msg.h"
 #include "hal.h"
 
-#include <stdio.h>
-
 /* Specific system mesages :
  * These messages don't follow generic rules of this protocol, there are
  * protocols level messages.
@@ -20,7 +18,6 @@
 void send_ack(void) {
     unsigned char ack = TRUE;
     hal_transmit(&ack, 1);
-    printf("ack sent.\n");
 }
 
 unsigned char set_extern_id(vm_t* vm, target_mode_t target_mode, unsigned short target,

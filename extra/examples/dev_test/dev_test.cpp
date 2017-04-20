@@ -16,6 +16,7 @@
  * application
  */
 #include "robus.h"
+#include "sys_msg.h"
 
 #include <avr/io.h>
 #include <util/delay.h>
@@ -54,11 +55,11 @@ void rx_cb(msg_t *msg) {
     /*
      * Add your RX code here.
      */
-     if (msg->header.cmd == LED)
-         if (msg->data[0])
-             PORTB |= (1<<PORTB5);
-         if (!msg->data[0])
-             PORTB &= ~(1<<PORTB5);
+    //  if (msg->header.cmd == LED)
+    //      if (msg->data[0])
+    //          PORTB |= (1<<PORTB5);
+    //      if (!msg->data[0])
+    //          PORTB &= ~(1<<PORTB5);
 
 }
 
@@ -104,12 +105,14 @@ int main(void) {
         //  _delay_ms(1000);        //Delay for 1000ms => 1 sec
         //  PORTB &= ~(1<<PORTB5);    //Turn 6th bit on PORTB (i.e. PB5) to 0 => off
         //  _delay_ms(1000);        //Delay for 1000ms => 1 sec
-        msg.data[0] = 1;
-        robus_send(vm1, &msg);
-        _delay_ms(1000);
-        msg.data[0] = 0;
-        robus_send(vm1, &msg);
-        _delay_ms(1000);
+        // msg.data[0] = 1;
+        // robus_send(vm1, &msg);
+        // topology_detection(vm1);
+        // _delay_ms(1000);
+        // msg.data[0] = 0;
+        // robus_send(vm1, &msg);
+        // topology_detection(vm1);
+        // _delay_ms(1000);
      }
 
     return 0;
