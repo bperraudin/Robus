@@ -13,7 +13,7 @@
 #include "target.h"
 #include "sys_msg.h"
 #include "time.h"
-//#include "test_board.h"
+
 
 #ifdef DEBUG
 #include <stdio.h>
@@ -228,28 +228,36 @@ void msg_complete() {
         switch (CURRENTMSG.header.cmd) {
             case WRITE_ID:
                 // Get and save a new given ID
-                if (CURRENTMSG.header.target_mode == BROADCAST &
-                    ctx.detection.keepline != NO_DETECT &
-                    !ctx.detection.detection_end) {
+                if ((CURRENTMSG.header.target_mode == BROADCAST) &
+                    (ctx.detection.keepline != NO_BRANCH) &
+                    (!ctx.detection.detection_end)) {
 
                     // We are on topology detection mode, and this is our turn
                     // Save id for the next module
-                    ctx.vm_table[ctx.detection.vm_number].id =
+
+                    ctx.vm_table[ctx.detection.detected_vm++].id =
                         (((unsigned short)CURRENTMSG.data[1]) |
                         ((unsigned short)CURRENTMSG.data[0] << 8));
+
                     // Check if that was the last virtual module
-                    if (ctx.detection.vm_number == ctx.vm_number) {
+                    if (ctx.detection.detected_vm == ctx.vm_number) {
                         ctx.detection.detection_end = TRUE;
-                        if (ctx.detection.keepline == BRANCHA)
-                            unsigned char poke (BRANCHB); // TODO
-                        else
-                            unsigned char poke (BRANCHA); // TODO
-                    }
-                    else {
-                        ctx.detection.vm_number++;
+
+                        if (ctx.detection.keepline == BRANCH_A) {
+                            if (!poke(BRANCH_B)) {
+                                ctx.detection.keepline = NO_BRANCH;
+                                reset_PTP(BRANCH_A);
+                            }
+                        }
+                        else if (ctx.detection.keepline == BRANCH_B) {
+                            if (!poke(BRANCH_A)) {
+                                ctx.detection.keepline = NO_BRANCH;
+                                reset_PTP(BRANCH_B);
+                            }
+                        }
                     }
                 }
-                else {
+                else if (CURRENTMSG.header.target_mode != BROADCAST) {
                     CURRENTMODULE.id = (((unsigned short)CURRENTMSG.data[1]) |
                                        ((unsigned short)CURRENTMSG.data[0] << 8));
                 }

@@ -30,7 +30,8 @@ void robus_init(void) {
     // No detection already done
     ctx.detection.detection_end = FALSE;
     // init PTP line detection status
-    ctx.detection.keepline = NO_DETECT;
+    ctx.detection.keepline = NO_BRANCH;
+    ctx.detection_mode = NO_DETECT;
 
     // Clear message allocation buffer table
     for (int i = 0; i < MSG_BUFFER_SIZE; i++) {
