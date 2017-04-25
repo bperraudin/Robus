@@ -45,7 +45,7 @@ ISR(USART_RX_vect)
  */
 ISR (INT0_vect)
 {
-    ptp_detect(BRANCHB);
+    ptp_detected(BRANCH_B);
 }
 
 /**
@@ -54,36 +54,48 @@ ISR (INT0_vect)
  */
 ISR (INT1_vect)
 {
-    ptp_detect(BRANCHA);
+    ptp_detected(BRANCH_A);
 }
 
 
-void set_PTPA(void) {
-    PTPA_SETUP_PORT |= (1 << PTPA_SETUP_PIN);     // set the PTPA pin as output
-    EIMSK &= ~(1 << INT1); // Turns off INT1
-    EICRA &= ~(1 << ISC11); // Clean edge/state detection
-    PTPA_PORT |= (1<<PTPA_PIN); // Set the PTPA pin
+void set_PTP(branch_t branch) {
+    if (branch == BRANCH_A) {
+        PTPA_SETUP_PORT |= (1 << PTPA_SETUP_PIN);     // set the PTPA pin as output
+        EIMSK &= ~(1 << INT1); // Turns off INT1
+        EICRA &= ~(1 << ISC11); // Clean edge/state detection
+        PTPA_PORT |= (1<<PTPA_PIN); // Set the PTPA pin
+    }
+    else if (branch == BRANCH_B) {
+        PTPB_SETUP_PORT |= (1 << PTPB_SETUP_PIN);     // set the PTPB pin
+        EIMSK &= ~(1 << INT0); // Turns off INT0
+        EICRA &= ~(1 << ISC01); // Clean edge/state detection
+        PTPB_PORT |= (1<<PTPB_PIN); // Set the PTPB pin
+    }
 }
 
-void reset_PTPA(void) {
-    PTPA_PORT &= ~(1<<PTPA_PIN); // set the PTPA pin as input
-    PTPA_SETUP_PORT &= ~(1 << PTPA_SETUP_PIN);     // Clear the PTPA pin
-    EICRA |= (1 << ISC11); // set to trigger on falling edge event
-    EIMSK |= (1 << INT1); // Turns on INT1
+void reset_PTP(branch_t branch) {
+    if (branch == BRANCH_A) {
+        PTPA_PORT &= ~(1<<PTPA_PIN); // set the PTPA pin as input
+        PTPA_SETUP_PORT &= ~(1 << PTPA_SETUP_PIN);     // Clear the PTPA pin
+        EICRA |= (1 << ISC11); // set to trigger on falling edge event
+        EIMSK |= (1 << INT1); // Turns on INT1
+    }
+    else if (branch == BRANCH_B) {
+        PTPB_PORT &= ~(1<<PTPB_PIN); // set the PTPB pin as input
+        PTPB_SETUP_PORT &= ~(1 << PTPB_SETUP_PIN);     // Clear the PTPB pin
+        EICRA |= (1 << ISC01); // set to trigger on falling edge event
+        EIMSK |= (1 << INT0); // Turns on INT0
+    }
 }
 
-void set_PTPB(void) {
-    PTPB_SETUP_PORT |= (1 << PTPB_SETUP_PIN);     // set the PTPB pin
-    EIMSK &= ~(1 << INT0); // Turns off INT0
-    EICRA &= ~(1 << ISC01); // Clean edge/state detection
-    PTPB_PORT |= (1<<PTPB_PIN); // Set the PTPB pin
+void send_poke(branch_t branch) {
+    set_PTP(branch);
+    hal_timeout(1);
+    reset_PTP(branch);
 }
 
-void reset_PTPB(void) {
-    PTPB_PORT &= ~(1<<PTPB_PIN); // set the PTPB pin as input
-    PTPB_SETUP_PORT &= ~(1 << PTPB_SETUP_PIN);     // Clear the PTPB pin
-    EICRA |= (1 << ISC01); // set to trigger on falling edge event
-    EIMSK |= (1 << INT0); // Turns on INT0
+void hal_timeout(int factor) {
+    // TODO: do something clever here...
 }
 
 /**
@@ -103,7 +115,7 @@ void hal_init(void) {
 
     // Set baud rate
     //UBRR0= UBRR_VALUE;
-    UBRR0H = (uint8_t)(UBRR_VALUE>>8);
+    UBRR0H = (uint8_t)((UBRR_VALUE)>>8);
     UBRR0L = (uint8_t)(UBRR_VALUE);
     // interrupt on receive
 

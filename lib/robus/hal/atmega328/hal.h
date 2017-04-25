@@ -2,15 +2,17 @@
 #define _HAL_H_
 
 #include "context.h"
+#include "detection.h"
 
 void hal_init(void);
 
 unsigned char hal_transmit(unsigned char* data, unsigned short size);
 
-void set_PTPA(void);
-void reset_PTPA(void);
+void send_poke(branch_t branch);
+void hal_timeout(int factor);
 
-void set_PTPB(void);
-void reset_PTPB(void);
+void set_PTP(branch_t branch);
+void reset_PTP(branch_t branch);
+
 
 #endif /* _HAL_H_ */

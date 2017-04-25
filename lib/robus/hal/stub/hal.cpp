@@ -13,7 +13,7 @@
  */
 unsigned char hal_transmit(unsigned char* data, unsigned short size) {
    for (unsigned short i = 0; i < size; i++)
-   { 
+   {
         //printf("0x%02x ", *data);
         ctx.data_cb(data++);
    }
@@ -23,4 +23,20 @@ unsigned char hal_transmit(unsigned char* data, unsigned short size) {
 
 void hal_init(void) {
     // I2C configuration
+}
+
+void send_poke(branch_t branch) {
+
+}
+
+void hal_timeout(int factor) {
+
+}
+
+void set_PTP(branch_t branch) {
+
+}
+
+void reset_PTP(branch_t branch) {
+  
 }
