@@ -5,6 +5,7 @@
  *  Author: Nicolas Rabault
  */
 
+ #ifndef UNIT_TEST
 
 #include "robus.h"
 #include "sys_msg.h"
@@ -65,6 +66,7 @@ unsigned char test_init(void) {
     robus_init();
     vm1 = robus_module_create(rx_cb, 1, "test module of the death!");
     vm2 = robus_module_create(rx_cb, 2, "another one.");
+
     if (test(vm1->rx_cb == rx_cb)) return 1;
     if (test(vm1->type == 1)) return 1;
     if (test(!strncmp(vm1->alias, "test module of ", 15))) return 1;
@@ -256,3 +258,5 @@ int main(void) {
 
     return test_end();
 }
+
+#endif /* UNIT_TEST */

@@ -1,3 +1,5 @@
+#ifndef UNIT_TEST
+
 #include <robus.h>
 #include <sys_msg.h>
 
@@ -50,3 +52,5 @@ void loop() {
 
     delay(10);
 }
+
+#endif /* UNIT_TEST */

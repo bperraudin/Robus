@@ -1,3 +1,5 @@
+#ifndef UNIT_TEST
+
 #include <robus.h>
 #include <detection.h>
 #include <hal.h>
@@ -103,3 +105,5 @@ int main(int argc, char const *argv[]) {
 
     return 0;
 }
+
+#endif /* UNIT_TEST */

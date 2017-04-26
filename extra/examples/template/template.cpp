@@ -9,7 +9,7 @@
  * module application.
  */
 
-
+#ifndef UNIT_TEST
 
 /**
  * This is the minimal include you will need to use Robus in a module
@@ -92,3 +92,5 @@ int main(void) {
 
     return 0;
 }
+
+#endif /* UNIT_TEST */

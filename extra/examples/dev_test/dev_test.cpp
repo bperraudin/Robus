@@ -9,7 +9,7 @@
  * module application.
  */
 
-
+#ifndef UNIT_TEST
 
 /**
  * This is the minimal include you will need to use Robus in a module
@@ -97,7 +97,7 @@ int main(void) {
      msg.header.cmd = LED;
      msg.header.target_mode = ID;
      msg.header.size = 1;
-     
+
      while(1)
      {
         //  PORTB |= (1<<PORTB5);    //Turn 6th bit on PORTB (i.e. PB5) to 1 => on
@@ -114,3 +114,5 @@ int main(void) {
 
     return 0;
 }
+
+#endif /* UNIT_TEST */
