@@ -62,8 +62,10 @@ int main(int argc, char const *argv[]) {
 
     vm = robus_module_create(rx_cb, 1, alias);
 
+    char name[256];
     for (int i=1; i < number_vm; i++) {
-        robus_module_create(0, 1, "dummy");
+        snprintf(name, 256, "%s_vm_%d", alias, i);
+        robus_module_create(0, 1, name);
     }
 
     if (strcmp(side, "none") == 0) {
