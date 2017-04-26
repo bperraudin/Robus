@@ -33,8 +33,15 @@ cache:
     directories:
         - "~/.platformio"
 
+addons:
+  apt:
+    packages:
+    - zmq
+
+
 install:
-    - pip install -U platformio
+    # - pip install -U platformio
+    - pip install git+https://github.com/platformio/platformio-core
 
 script:
     - platformio run
