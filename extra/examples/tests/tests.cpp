@@ -93,12 +93,16 @@ unsigned char add_nocb_vm(void) {
 }
 
 unsigned char set_id_brdcst(void) {
-    printf("\nSet ID with BROADCAST mode :\n");
-    if (test(!set_extern_id(vm1, BROADCAST, BROADCAST_VAL, 0x000A))) return 1;
-    if (test(vm1->id == 0x000A)) return 1;
-    if (test(vm2->id == 0x000A)) return 1;
-    if (test(vm3->id == 0x000A)) return 1;
-    if (test(vm4->id == 0x000A)) return 1;
+    // ID Broadcast is reserved for topology detection;
+    // printf("\nSet ID with BROADCAST mode :\n");
+    // if (test(!set_extern_id(vm1, BROADCAST, BROADCAST_VAL, 0x000A))) return 1;
+    // if (test(vm1->id == 0x000A)) return 1;
+    // if (test(vm2->id == 0x000A)) return 1;
+    // if (test(vm3->id == 0x000A)) return 1;
+    // if (test(vm4->id == 0x000A)) return 1;
+    vm1->id = 0x000A;
+    vm2->id = 0x000A;
+    vm3->id = 0x000A;
     vm4->id = 0x000E;
     return 0;
 }
