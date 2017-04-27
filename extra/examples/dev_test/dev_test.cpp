@@ -10,6 +10,7 @@
  */
 
 #ifndef UNIT_TEST
+#define MASTER_MODULE
 
 /**
  * This is the minimal include you will need to use Robus in a module
@@ -20,7 +21,6 @@
 
 #include <avr/io.h>
 #include <util/delay.h>
-
 
 /**
  * \enum msg_dir_t
@@ -55,11 +55,11 @@ void rx_cb(msg_t *msg) {
     /*
      * Add your RX code here.
      */
-    //  if (msg->header.cmd == LED)
-    //      if (msg->data[0])
-    //          PORTB |= (1<<PORTB5);
-    //      if (!msg->data[0])
-    //          PORTB &= ~(1<<PORTB5);
+     if (msg->header.cmd == LED)
+         if (msg->data[0])
+             PORTB |= (1<<PORTB5);
+         if (!msg->data[0])
+             PORTB &= ~(1<<PORTB5);
 
 }
 
@@ -75,44 +75,37 @@ int main(void) {
     robus_init();
     //Blink debug
     DDRB |= (1<<DDB5); //Set the 6th bit on PORTB (i.e. PB5) to 1 => output
-    // while(1)
-    // {
-    //     PORTB |= (1<<PORTB5);    //Turn 6th bit on PORTB (i.e. PB5) to 1 => on
-    //     _delay_ms(1000);        //Delay for 1000ms => 1 sec
-    //     PORTB &= ~(1<<PORTB5);    //Turn 6th bit on PORTB (i.e. PB5) to 0 => off
-    //     _delay_ms(1000);        //Delay for 1000ms => 1 sec
-    // }
 
     /*
      * Module management with callback
      */
     // creation
     vm1 = robus_module_create(rx_cb, DEV_BOARD, "alias1");
-    // reception have to be managed in "rx_cb" callback.
+    // start topology detection
+#ifdef MASTER_MODULE
+    _delay_ms(1000);
+    topology_detection(vm1);
+#endif
 
     /*
      * Add your main code here.
      */
      msg_t msg;
-     msg.header.target = vm1->id;
+     msg.header.target = 2;
      msg.header.cmd = LED;
      msg.header.target_mode = ID;
      msg.header.size = 1;
 
      while(1)
      {
-        //  PORTB |= (1<<PORTB5);    //Turn 6th bit on PORTB (i.e. PB5) to 1 => on
-        //  _delay_ms(1000);        //Delay for 1000ms => 1 sec
-        //  PORTB &= ~(1<<PORTB5);    //Turn 6th bit on PORTB (i.e. PB5) to 0 => off
-        //  _delay_ms(1000);        //Delay for 1000ms => 1 sec
-        // msg.data[0] = 1;
-        // robus_send(vm1, &msg);
-        // topology_detection(vm1);
-        // _delay_ms(1000);
-        // msg.data[0] = 0;
-        // robus_send(vm1, &msg);
-        // topology_detection(vm1);
-        // _delay_ms(1000);
+    #ifdef MASTER_MODULE
+        msg.data[0] = 1;
+        robus_send(vm1, &msg);
+        _delay_ms(1000);
+        msg.data[0] = 0;
+        robus_send(vm1, &msg);
+        _delay_ms(1000);
+    #endif
      }
 
     return 0;

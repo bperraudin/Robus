@@ -1,6 +1,7 @@
 #include "hal.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/delay.h>
 
 #define USART_BAUDRATE 9600ul
 #define UBRR_VALUE (F_CPU/(USART_BAUDRATE<<4))-1
@@ -17,11 +18,13 @@
 
 #define PTPA_PORT PORTD
 #define PTPA_PIN PORTD3
+#define PTPA_READ (PIND & (1<<PD3))
 #define PTPA_SETUP_PORT DDRD
 #define PTPA_SETUP_PIN DDD3
 
 #define PTPB_PORT PORTD
 #define PTPB_PIN PORTD2
+#define PTPB_READ (PIND & (1<<PD2))
 #define PTPB_SETUP_PORT DDRD
 #define PTPB_SETUP_PIN DDD2
 
@@ -43,47 +46,81 @@ ISR(USART_RX_vect)
  * \fn ISR(INT0_vect)
  * \brief PTPB interrupt
  */
-ISR (INT0_vect)
-{
-    ptp_detected(BRANCH_B);
+ISR (INT0_vect) {
+    static char ptp_state = 1;
+    if (ptp_state == 0) {
+        ptp_released(BRANCH_B);
+        reset_PTP(BRANCH_B);
+    }
+    else {
+        hal_timeout(2);
+        if (PTPB_READ == 0){
+            ptp_detected(BRANCH_B);
+            EICRA |= (1 << ISC00); // reverse the detection edge
+            ptp_state = 0;
+        }
+        else{
+            poke_detected(BRANCH_B);
+        }
+    }
 }
 
 /**
  * \fn ISR(INT0_vect)
  * \brief PTPA interrupt
  */
-ISR (INT1_vect)
-{
-    ptp_detected(BRANCH_A);
+ISR (INT1_vect) {
+    static char ptp_state = 1;
+    if (ptp_state == 0) {
+        ptp_released(BRANCH_A);
+        reset_PTP(BRANCH_A);
+    }
+    else {
+        hal_timeout(2);
+        if (PTPA_READ == 0){
+            ptp_detected(BRANCH_A);
+            EICRA |= (1 << ISC10); // reverse the detection edge
+            ptp_state = 0;
+        }
+        else{
+            poke_detected(BRANCH_A);
+        }
+    }
 }
 
 
 void set_PTP(branch_t branch) {
     if (branch == BRANCH_A) {
-        PTPA_SETUP_PORT |= (1 << PTPA_SETUP_PIN);     // set the PTPA pin as output
         EIMSK &= ~(1 << INT1); // Turns off INT1
         EICRA &= ~(1 << ISC11); // Clean edge/state detection
-        PTPA_PORT |= (1<<PTPA_PIN); // Set the PTPA pin
+        EIFR |= (1 << INTF1); //reset event flag
+        PTPA_SETUP_PORT |= (1 << PTPA_SETUP_PIN);     // set the PTPA pin as output
+        PTPA_PORT &= ~(1<<PTPA_PIN); // Set the PTPA pin
     }
     else if (branch == BRANCH_B) {
-        PTPB_SETUP_PORT |= (1 << PTPB_SETUP_PIN);     // set the PTPB pin
         EIMSK &= ~(1 << INT0); // Turns off INT0
         EICRA &= ~(1 << ISC01); // Clean edge/state detection
-        PTPB_PORT |= (1<<PTPB_PIN); // Set the PTPB pin
+        EIFR |= (1 << INTF0); //reset event flag
+        PTPB_SETUP_PORT |= (1 << PTPB_SETUP_PIN);     // set the PTPB pin
+        PTPB_PORT &= ~(1<<PTPB_PIN); // Set the PTPB pin
     }
 }
 
 void reset_PTP(branch_t branch) {
     if (branch == BRANCH_A) {
-        PTPA_PORT &= ~(1<<PTPA_PIN); // set the PTPA pin as input
-        PTPA_SETUP_PORT &= ~(1 << PTPA_SETUP_PIN);     // Clear the PTPA pin
+        PTPA_SETUP_PORT &= ~(1 << PTPA_SETUP_PIN); // set the PTPA pin as input
+        PTPA_PORT |= (1 << PTPA_PIN);    // turn On the Pull-up
+        EIFR |= (1 << INTF1); //reset event flag due to Pull-up
         EICRA |= (1 << ISC11); // set to trigger on falling edge event
+        EICRA &= ~(1 << ISC10); // set to trigger on falling edge event
         EIMSK |= (1 << INT1); // Turns on INT1
     }
     else if (branch == BRANCH_B) {
-        PTPB_PORT &= ~(1<<PTPB_PIN); // set the PTPB pin as input
-        PTPB_SETUP_PORT &= ~(1 << PTPB_SETUP_PIN);     // Clear the PTPB pin
+        PTPB_SETUP_PORT &= ~(1 << PTPB_SETUP_PIN); // set the PTPB pin as input
+        PTPB_PORT |= (1 << PTPB_PIN);    // turn On the Pull-up
+        EIFR |= (1 << INTF0); //reset event flag due to Pull-up
         EICRA |= (1 << ISC01); // set to trigger on falling edge event
+        EICRA &= ~(1 << ISC00); // set to trigger on falling edge event
         EIMSK |= (1 << INT0); // Turns on INT0
     }
 }
@@ -96,6 +133,7 @@ void send_poke(branch_t branch) {
 
 void hal_timeout(int factor) {
     // TODO: do something clever here...
+    for(int i=0; i<factor; i++)_delay_ms(1);
 }
 
 /**
@@ -110,6 +148,7 @@ void hal_init(void) {
     PTPA_PORT |= (1 << PTPA_PIN);    // turn On the Pull-up
     PTPB_PORT |= (1 << PTPB_PIN);    // turn On the Pull-up
     // PTPA and PTPB are now an input with pull-up enabled
+    EIFR |= (1 << INTF1) | (1 << INTF0);
     EICRA |= (1 << ISC11) | (1 << ISC01);    // set to triggers on falling edge event
     EIMSK |= (1 << INT0) | (1 << INT1);     // Turns on INT0 INT1
 
