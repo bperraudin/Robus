@@ -72,7 +72,7 @@ vm_t* robus_module_create(RX_CB rx_cb, unsigned char type, const char *alias) {
     // Initialise the number of data available into the buffer.
     ctx.vm_table[ctx.vm_number].data_to_read = 0;
     // Clear the msg allocation table.
-    for (i=0; i < MAX_VM_NUMBER; i++) {
+    for (i=0; i < MSG_BUFFER_SIZE; i++) {
         ctx.alloc_msg[i] = 0;
     }
     // Return the freshly initialized vm pointer.
