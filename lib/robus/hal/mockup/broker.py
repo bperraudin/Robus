@@ -1,7 +1,8 @@
 import zmq
 
-from threading import Thread
+from threading import Thread, Lock
 from collections import defaultdict
+
 
 BROKER_PORT = 9001
 
@@ -10,92 +11,119 @@ ctx = zmq.Context()
 
 class Broker(object):
     def __init__(self):
-        self.last_port = BROKER_PORT + 1
+        self.broker = ctx.socket(zmq.REP)
+        self.broker.bind('tcp://*:{}'.format(BROKER_PORT))
+
+        self.lp = BROKER_PORT + 1
+
         self.conn = {}
+        self.new_conn_lock = Lock()
+        self.conn_lock = defaultdict(lambda: Lock())
 
-        self.neighbors = defaultdict(lambda: dict(left= None, right=None))
-
+        self.neighbors = defaultdict(lambda: {'left': None,
+                                              'right': None})
         self.left, self.right = None, None
 
-        self.server = ctx.socket(zmq.REP)
-        self.server.bind('tcp://*:{}'.format(BROKER_PORT))
+        self.running = True
+
+    def send(self, id, wire, msg):
+        with self.conn_lock[id]:
+            sock = self.conn[id][1]
+
+            sock.send_string(wire)
+            sock.send(msg)
+
+    def broadcast(self, msg):
+        with self.new_conn_lock:
+            for id in self.conn.keys():
+                self.send(id, 'broadcast', msg)
 
     def serve(self):
-        def listen(sock):
+        def listener(my_id, sock):
             while True:
-                wire = sock.recv()
-                robus_msg = sock.recv()
+                wire = sock.recv_string()
+                msg = sock.recv()
 
-                msg = list(map(hex, robus_msg)) if wire == b'broadcast' else robus_msg
+                if wire == 'broadcast':
+                    self.broadcast(msg)
 
-                if wire == b'broadcast':
-                    for out in self.conn.values():
-                        out.send(wire)
-                        out.send(robus_msg)
+                elif wire == 'ptp left':
+                    id = self.neighbors[my_id]['left']
+                    if id is not None:
+                        self.send(id, 'ptp right', msg)
 
-                elif wire == b'ptp left':
-                    left = self.neighbors[sock]['left']
+                elif wire == 'ptp right':
+                    id = self.neighbors[my_id]['right']
+                    if id is not None:
+                        self.send(id, 'ptp left', msg)
 
-                    if left is None:
-                        continue
+        while self.running:
+            req = self.broker.recv()
+            req = req.decode('utf-8')
 
-                    left = self.conn[left]
+            if req.startswith('register'):
+                plug = req.split(' ')[1]
 
-                    left.send(b'ptp right')
-                    left.send(robus_msg)
+                rep = '{} {}'.format(self.lp,
+                                     self.lp + 1)
+                self.broker.send_string(rep)
 
-                elif wire == b'ptp right':
-                    right = self.neighbors[sock]['right']
+                recv_sock = ctx.socket(zmq.PAIR)
+                recv_sock.bind('tcp://*:{}'.format(self.lp))
 
-                    if right is None:
-                        continue
+                send_sock = ctx.socket(zmq.PAIR)
+                send_sock.bind('tcp://*:{}'.format(self.lp + 1))
 
-                    right = self.conn[right]
+                with self.new_conn_lock:
+                    self.conn[self.lp] = (recv_sock,
+                                          send_sock)
 
-                    right.send(b'ptp left')
-                    right.send(robus_msg)
+                if plug == 'none':
+                    self.left, self.right = self.lp, self.lp
 
-        while True:
-            req = self.server.recv()
+                elif plug == 'left':
+                    self.neighbors[self.lp]['right'] = self.left
+                    self.neighbors[self.left]['left'] = self.lp
+                    self.left = self.lp
 
-            if req.startswith(b'plug'):
-                side = req[len('plug '):]
+                elif plug == 'right':
+                    self.neighbors[self.lp]['left'] = self.right
+                    self.neighbors[self.right]['right'] = self.lp
+                    self.right = self.lp
 
-                sock = ctx.socket(zmq.PAIR)
-                sock.bind('tcp://*:{}'.format(self.last_port))
-
-                t = Thread(target=lambda: listen(sock))
+                t = Thread(target=lambda: listener(self.lp, recv_sock))
                 t.daemon = True
                 t.start()
 
-                if side == b'left':
-                    left, right = None, self.left
-                    self.neighbors[sock] = {'left': left, 'right': right}
-                    self.neighbors[self.conn[right]]['left'] = self.last_port
-                    self.left = self.last_port
+                self.print_topo()
 
-                elif side == b'right':
-                    left, right = self.right, None
-                    self.neighbors[sock] = {'left': left, 'right': right}
-                    self.neighbors[self.conn[left]]['right'] = self.last_port
-                    self.right = self.last_port
+                self.lp += 2
 
-                else:
-                    left, right = None, None
-                    self.left, self.right = self.last_port, self.last_port
+    def print_topo(self):
+        def id4mod(mod):
+            from string import ascii_lowercase
+            id = (mod - 9000) // 2
 
-                self.conn[self.last_port] = sock
+            if id == 1:
+                return 'gate'
+            else:
+                return ascii_lowercase[id - 2]
 
-                rep = '{}'.format(self.last_port)
-                self.last_port += 1
+        topo = 'Topology: '
+        mod = self.left
 
-            self.server.send_string(rep)
+        while mod is not None:
+            if self.left == self.right:
+                topo += '{}'.format(id4mod(mod))
+                break
+            topo += '{} <--> '.format(id4mod(mod))
+            mod = self.neighbors[mod]['right']
 
-            print('Broker > New module plugged:')
-            for d, v in self.neighbors.items():
-                p = next((p for p, s in self.conn.items() if s == d), None)
-                print('Broker > {} <--> {} <--> {}'.format(v['left'], p, v['right']))
-            print()
+            if mod == self.right:
+                topo += '{}'.format(id4mod(mod))
+                break
+        print(topo)
+
 
 if __name__ == '__main__':
     broker = Broker()
