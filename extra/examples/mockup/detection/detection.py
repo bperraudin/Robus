@@ -22,13 +22,13 @@ if __name__ == '__main__':
     gate = Popen([module_path, 'gate', 'none'])
     sleep(1)
 
-    modules = []
+    modules = [gate]
     for c in ascii_lowercase[:N]:
         side = choice(('left', 'right'))
         mod = Popen([module_path, c, side])
         modules.append(mod)
 
-    for mod in modules:
+    for mod in reversed(modules):
         mod.wait()
 
     broker.terminate()
