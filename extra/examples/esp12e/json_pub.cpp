@@ -1,6 +1,8 @@
 #ifndef UNIT_TEST
 
 #include <robus.h>
+#include <sys_msg.h>
+#include <detection.h>
 
 #include <Arduino.h>
 #include <Hash.h>
@@ -55,13 +57,35 @@ typedef enum {
   BUTTON_TYPE,
 } module_type_t;
 
+typedef enum {
+    PUBLISH_CMD,
+    IDENTIFY_CMD,
+    INTRODUCTION_CMD,
+    GATE_PROTOCOL_NB,
+} module_register_t;
 
-int listner = 0;
+
+int listener = 0;
+
 vm_t *vm;
+msg_t identify_msg;
 
 
 void rx_cb(msg_t *msg) {
-  // TODO: setup introduce/publish cmd to gather data
+  if (msg->header.cmd == INTRODUCTION_CMD) {
+    char alias[MAX_ALIAS_SIZE];
+    for (int i=0; i < MAX_ALIAS_SIZE; i++) {
+      alias[i] = msg->data[i];
+    }
+
+    int id = msg->header.source;
+    int type = msg->data[MAX_ALIAS_SIZE];
+
+    route_table[id] = std::pair<int, String>(type, alias);
+  }
+  else if (msg->header.cmd == PUBLISH_CMD) {
+    gathered_data[msg->header.source] = msg->data[0];
+  }
 }
 
 
@@ -77,24 +101,23 @@ void setup() {
 
     setup_wifi();
 
-    // Fill up with fake data.
-    route_table[12] = std::pair<int, String>(BUTTON_TYPE, "Butt");
-    route_table[21] = std::pair<int, String>(LED_TYPE, "LED");
-    route_table[32] = std::pair<int, String>(MOTOR_TYPE, "Motor");
-    gathered_data[12] = 78;
-
     robus_init();
-    vm = robus_module_create(rx_cb, 1, "Larry Skywalker");
-    vm->id = 42;
+    vm = robus_module_create(rx_cb, GATE_TYPE, "Larry Skywalker");
 
-    // TODO: Launch topology detection.
+    topology_detection(vm);
+
+    // Send identify msg
+    identify_msg.header.cmd = IDENTIFY_CMD;
+    identify_msg.header.target = BROADCAST_VAL;
+    identify_msg.header.target_mode = BROADCAST;
+    robus_send(vm, &identify_msg);
 }
 
 
 void loop() {
     webSocket.loop();
 
-    if (listner) {
+    if (listener) {
       publish_update();
     }
 
@@ -143,9 +166,6 @@ void publish_update() {
   payload += "}";
 
   webSocket.sendTXT(0, payload);
-  #ifdef DEBUG
-    // Serial.println(payload);
-  #endif
 }
 
 void setup_wifi() {
@@ -196,7 +216,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
       #ifdef DEBUG
         Serial.printf("[%u] Disconnected!\n", num);
       #endif
-      listner = 0;
+      listener = 0;
       break;
 
     case WStype_CONNECTED:
@@ -206,7 +226,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
         Serial.printf("[%u] Connected from %d.%d.%d.%d url: %s\n", num, ip[0], ip[1], ip[2], ip[3], payload);
       }
       #endif
-      listner = 1;
+      listener = 1;
       break;
 
     case WStype_TEXT:
