@@ -19,13 +19,14 @@ if __name__ == '__main__':
     broker = Popen(['python', broker_path])
     sleep(1)
 
-    gate = Popen([module_path, 'gate', 'none'])
+    gate = Popen([module_path, 'gate', 'gate', 'none'])
     sleep(1)
 
     modules = [gate]
     for c in ascii_lowercase[:N]:
         side = choice(('left', 'right'))
-        mod = Popen([module_path, c, side])
+        mod_type = choice(('motor', 'led', 'button'))
+        mod = Popen([module_path, mod_type, c, side])
         modules.append(mod)
 
     for mod in reversed(modules):
