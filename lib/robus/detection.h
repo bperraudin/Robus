@@ -28,6 +28,7 @@ typedef struct __attribute__((__packed__)){
 } detection_t;
 
 unsigned char topology_detection(vm_t* vm);
+void reset_detection(void);
 
 unsigned char poke(branch_t branch);
 void poke_detected(branch_t branch);

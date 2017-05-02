@@ -71,6 +71,14 @@ unsigned char topology_detection(vm_t* vm) {
     return 0;
 }
 
+void reset_detection(void) {
+  ctx.detection.keepline = NO_BRANCH;
+  ctx.detection.detection_end = 0;
+  ctx.detection.detected_vm = 0;
+
+  ctx.detection_mode = NO_DETECT;
+}
+
 void ptp_released(branch_t branch) {
     ctx.detection.keepline = NO_BRANCH;
 
