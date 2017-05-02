@@ -47,17 +47,18 @@ ISR(USART_RX_vect)
  * \brief PTPB interrupt
  */
 ISR (INT0_vect) {
-    static char ptp_state = 1;
-    if (ptp_state == 0) {
+    static char ptp_stateB = 1;
+    if (ptp_stateB == 0) {
         ptp_released(BRANCH_B);
         reset_PTP(BRANCH_B);
+        ptp_stateB = 1;
     }
     else {
         hal_timeout(2);
         if (PTPB_READ == 0){
             ptp_detected(BRANCH_B);
             EICRA |= (1 << ISC00); // reverse the detection edge
-            ptp_state = 0;
+            ptp_stateB = 0;
         }
         else{
             poke_detected(BRANCH_B);
@@ -66,21 +67,22 @@ ISR (INT0_vect) {
 }
 
 /**
- * \fn ISR(INT0_vect)
+ * \fn ISR(INT1_vect)
  * \brief PTPA interrupt
  */
 ISR (INT1_vect) {
-    static char ptp_state = 1;
-    if (ptp_state == 0) {
+    static char ptp_stateA = 1;
+    if (ptp_stateA == 0) {
         ptp_released(BRANCH_A);
         reset_PTP(BRANCH_A);
+        ptp_stateA = 1;
     }
     else {
         hal_timeout(2);
         if (PTPA_READ == 0){
             ptp_detected(BRANCH_A);
             EICRA |= (1 << ISC10); // reverse the detection edge
-            ptp_state = 0;
+            ptp_stateA = 0;
         }
         else{
             poke_detected(BRANCH_A);
@@ -92,14 +94,14 @@ ISR (INT1_vect) {
 void set_PTP(branch_t branch) {
     if (branch == BRANCH_A) {
         EIMSK &= ~(1 << INT1); // Turns off INT1
-        EICRA &= ~(1 << ISC11); // Clean edge/state detection
+        EICRA &= ~(1 << ISC11) & ~(1 << ISC10); // Clean edge/state detection
         EIFR |= (1 << INTF1); //reset event flag
         PTPA_SETUP_PORT |= (1 << PTPA_SETUP_PIN);     // set the PTPA pin as output
         PTPA_PORT &= ~(1<<PTPA_PIN); // Set the PTPA pin
     }
     else if (branch == BRANCH_B) {
         EIMSK &= ~(1 << INT0); // Turns off INT0
-        EICRA &= ~(1 << ISC01); // Clean edge/state detection
+        EICRA &= ~(1 << ISC01) & ~(1 << ISC00); // Clean edge/state detection
         EIFR |= (1 << INTF0); //reset event flag
         PTPB_SETUP_PORT |= (1 << PTPB_SETUP_PIN);     // set the PTPB pin
         PTPB_PORT &= ~(1<<PTPB_PIN); // Set the PTPB pin
@@ -107,6 +109,7 @@ void set_PTP(branch_t branch) {
 }
 
 void reset_PTP(branch_t branch) {
+    sei();
     if (branch == BRANCH_A) {
         PTPA_SETUP_PORT &= ~(1 << PTPA_SETUP_PIN); // set the PTPA pin as input
         PTPA_PORT |= (1 << PTPA_PIN);    // turn On the Pull-up
@@ -141,6 +144,7 @@ void hal_timeout(int factor) {
  * \brief hardware configuration (clock, communication, DMA...)
  */
 void hal_init(void) {
+    cli();
     // Set ptp lines
     PTPA_SETUP_PORT &= ~(1 << PTPA_SETUP_PIN);     // Clear the PTPA pin
     PTPB_SETUP_PORT &= ~(1 << PTPB_SETUP_PIN);     // Clear the PTPB pin
