@@ -89,5 +89,6 @@ void ptp_released(branch_t branch) {
         else if (branch == BRANCH_B) {
             reset_PTP(BRANCH_A);
         }
+        reset_detection();
     }
 }

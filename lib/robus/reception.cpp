@@ -245,14 +245,14 @@ void msg_complete() {
 
                         if (ctx.detection.keepline == BRANCH_A) {
                             if (!poke(BRANCH_B)) {
-                                ctx.detection.keepline = NO_BRANCH;
                                 reset_PTP(BRANCH_A);
+                                reset_detection();
                             }
                         }
                         else if (ctx.detection.keepline == BRANCH_B) {
                             if (!poke(BRANCH_A)) {
-                                ctx.detection.keepline = NO_BRANCH;
                                 reset_PTP(BRANCH_B);
+                                reset_detection();
                             }
                         }
                     }

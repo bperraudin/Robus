@@ -21,7 +21,6 @@ typedef enum {
 } module_type_t;
 
 typedef enum {
-    RESET_CMD,
     LEAVE_CMD,
     PUBLISH_CMD,
     IDENTIFY_CMD,
@@ -79,9 +78,6 @@ void rx_cb(msg_t *msg) {
   } else if (msg->header.cmd == PUBLISH_CMD && vm->id == GATE_ID) {
     data[msg->header.source] = msg->data[0];
 
-  } else if (msg->header.cmd == RESET_CMD) {
-    reset_detection();
-
   }
 }
 
@@ -128,18 +124,8 @@ void publish_info_as_json() {
 }
 
 void reset_table() {
-  msg_t reset_msg;
-
-  reset_msg.header.cmd = RESET_CMD;
-  reset_msg.header.target = BROADCAST_VAL;
-  reset_msg.header.target_mode = BROADCAST;
-
-  robus_send(vm, &reset_msg);
-
   route_table.clear();
   data.clear();
-
-  usleep(MSG_TIMEOUT);
 }
 
 
@@ -194,10 +180,8 @@ int main(int argc, char *argv[]) {
     usleep(ALL_CONNECTED_TIMEOUT);
 
     for (int j= 0; j < 10; j++) {
-      printf("\nCleaning route table\n");
-      reset_table();
-
       printf("Launch topology detection\n");
+      reset_table();
       topology_detection(vm);
 
       printf("\nAsk for identification\n");
@@ -208,7 +192,7 @@ int main(int argc, char *argv[]) {
       for (auto const &el: route_table) {
         printf("alias \"%s\" - id %d - type %d\n", el.second.second.c_str(), el.first, el.second.first);
       }
-
+      
       printf("\nGathered updates\n");
       for (int i=0; i < 10; i++) {
         publish_info_as_json();
