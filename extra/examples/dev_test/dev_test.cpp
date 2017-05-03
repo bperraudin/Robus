@@ -75,6 +75,14 @@ int main(void) {
     robus_init();
     //Blink debug
     DDRB |= (1<<DDB5); //Set the 6th bit on PORTB (i.e. PB5) to 1 => output
+#ifndef MASTER_MODULE
+    DDRD &= ~(1<<DDD6) & ~(1<<DDD7); // Set D6 and D7 to highZ
+#endif
+#ifdef MASTER_MODULE
+    DDRD |= (1<<DDD6) | (1<<DDD7); // Set D6 and D7 to highZ
+    PORTD |= (1<<PORTD6); // Set pullA up
+    PORTD &= ~(1<<PORTD7); // Set pullB down
+#endif
 
     /*
      * Module management with callback
@@ -99,12 +107,15 @@ int main(void) {
      while(1)
      {
     #ifdef MASTER_MODULE
-        msg.data[0] = 1;
-        robus_send(vm1, &msg);
-        _delay_ms(1000);
-        msg.data[0] = 0;
-        robus_send(vm1, &msg);
-        _delay_ms(1000);
+        for (int i = 2; i<5; i++) {
+            msg.header.target = i;
+            msg.data[0] = 1;
+            robus_send(vm1, &msg);
+            _delay_ms(1000);
+            msg.data[0] = 0;
+            robus_send(vm1, &msg);
+            _delay_ms(1000);
+        }
     #endif
      }
 

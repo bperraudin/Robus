@@ -12,8 +12,12 @@
 #define DEFAULTID 0x00
 #define PROTOCOL_REVISION 0
 #define BROADCAST_VAL 0x0FFF
-#define MAX_VM_NUMBER 5
-#define MSG_BUFFER_SIZE 2
+#ifndef MAX_VM_NUMBER
+    #define MAX_VM_NUMBER 5
+#endif
+#ifndef MSG_BUFFER_SIZE
+    #define MSG_BUFFER_SIZE 5
+#endif
 
 
 #ifndef MODULETYPE
