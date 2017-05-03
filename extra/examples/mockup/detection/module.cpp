@@ -24,6 +24,7 @@ typedef enum {
     LEAVE_CMD,
     PUBLISH_CMD,
     IDENTIFY_CMD,
+    PLEASE_PUB_CMD,
     INTRODUCTION_CMD,
     MOTOR_PROTOCOL_NB,
 } module_register_t;
@@ -38,10 +39,10 @@ typedef enum {
 #define GATE_ID 1
 
 int leave = 0;
-int identify = 0;
 
 vm_t *vm;
 
+msg_t pub_msg;
 msg_t leave_msg;
 msg_t identify_msg;
 
@@ -52,12 +53,23 @@ std::map<int, std::pair<int, std::string> >route_table;
 std::map<int, int>data;
 
 int random_data = 0;
+int response = 0;
 
 
 void rx_cb(msg_t *msg) {
-  if (msg->header.cmd == IDENTIFY_CMD) {
+  if (msg->header.cmd == IDENTIFY_CMD && msg->data[0] == vm->id) {
     printf("I'm the module \"%s\" with id %d and type %d\n", vm->alias, vm->id, vm->type);
-    identify = 1;
+    msg_t introduction_msg;
+    introduction_msg.header.cmd = INTRODUCTION_CMD;
+    introduction_msg.header.target = BROADCAST_VAL;
+    introduction_msg.header.target_mode = BROADCAST;
+    introduction_msg.header.size = 1 + MAX_ALIAS_SIZE;
+
+    for (int i=0; i < MAX_ALIAS_SIZE; i++) {
+      introduction_msg.data[i] = vm->alias[i];
+    }
+    introduction_msg.data[MAX_ALIAS_SIZE] = vm->type;
+    robus_send(vm, &introduction_msg);
 
   } else if (msg->header.cmd == LEAVE_CMD) {
     leave = 1;
@@ -74,11 +86,23 @@ void rx_cb(msg_t *msg) {
 
     route_table[id] = std::pair<int, std::string>(type, std::string(alias));
 
+  } else if (msg->header.cmd == PLEASE_PUB_CMD && msg->data[0] == vm->id) {
+    msg_t publish_msg;
+    publish_msg.header.cmd = PUBLISH_CMD;
+    publish_msg.header.target = BROADCAST_VAL;
+    publish_msg.header.target_mode = BROADCAST;
+    publish_msg.header.size = 1;
+    publish_msg.data[0] = random_data;
+    robus_send(vm, &publish_msg);
+    random_data += vm->id;
+
   // Only the gate should receive the publish CMD
   } else if (msg->header.cmd == PUBLISH_CMD && vm->id == GATE_ID) {
     data[msg->header.source] = msg->data[0];
 
   }
+
+  response = 1;
 }
 
 std::string type_from_enum(module_type_t type) {
@@ -107,6 +131,7 @@ void publish_info_as_json() {
     json += "\"id\": " + std::to_string(el.first) + ", ";
     json += "\"alias\": \"" + el.second.second + "\"";
 
+    // TODO: if el.first in data
     if (el.second.first == BUTTON_TYPE) {
       json += ", \"value\": " + std::to_string(data[el.first]);
     }
@@ -126,6 +151,22 @@ void publish_info_as_json() {
 void reset_table() {
   route_table.clear();
   data.clear();
+}
+
+int send_and_wait(msg_t msg) {
+  response = 0;
+
+  robus_send(vm, &msg);
+
+  for (int i=0; i<10; i++) {
+    usleep(MSG_TIMEOUT);
+
+    if (response) {
+      return 0;
+    }
+  }
+
+  return 1;
 }
 
 
@@ -174,29 +215,43 @@ int main(int argc, char *argv[]) {
   identify_msg.header.cmd = IDENTIFY_CMD;
   identify_msg.header.target = BROADCAST_VAL;
   identify_msg.header.target_mode = BROADCAST;
+  identify_msg.header.size = 1;
+
+  pub_msg.header.cmd = PLEASE_PUB_CMD;
+  pub_msg.header.target = BROADCAST_VAL;
+  pub_msg.header.target_mode = BROADCAST;
+  pub_msg.header.size = 1;
 
 
   if (strcmp(side, "none") == 0) {
     usleep(ALL_CONNECTED_TIMEOUT);
 
-    for (int j= 0; j < 10; j++) {
+    for (int j= 0; j < 3; j++) {
       printf("Launch topology detection\n");
       reset_table();
-      topology_detection(vm);
+      int nb_mod = topology_detection(vm);
+      printf("Found %d modules\n", nb_mod);
 
       printf("\nAsk for identification\n");
-      robus_send(vm, &identify_msg);
-      usleep(MSG_TIMEOUT);
+      for (int i=2; i<=nb_mod; i++) {
+        identify_msg.data[0] = i;
+        send_and_wait(identify_msg);
+      }
 
       printf("\nRoute table:\n");
       for (auto const &el: route_table) {
         printf("alias \"%s\" - id %d - type %d\n", el.second.second.c_str(), el.first, el.second.first);
       }
-      
+
       printf("\nGathered updates\n");
       for (int i=0; i < 10; i++) {
+        for (int k=2; k<=nb_mod; k++) {
+          if (route_table[k].first == BUTTON_TYPE) {
+            pub_msg.data[0] = k;
+            send_and_wait(pub_msg);
+          }
+        }
         publish_info_as_json();
-        usleep(LOOP_TIMEOUT);
       }
     }
 
@@ -206,33 +261,6 @@ int main(int argc, char *argv[]) {
   }
   else {
     while (!leave) {
-      if (identify) {
-        msg_t introduction_msg;
-        introduction_msg.header.cmd = INTRODUCTION_CMD;
-        introduction_msg.header.target = BROADCAST_VAL;
-        introduction_msg.header.target_mode = BROADCAST;
-        introduction_msg.header.size = 1 + MAX_ALIAS_SIZE;
-
-        for (int i=0; i < MAX_ALIAS_SIZE; i++) {
-          introduction_msg.data[i] = vm->alias[i];
-        }
-        introduction_msg.data[MAX_ALIAS_SIZE] = vm->type;
-        robus_send(vm, &introduction_msg);
-        identify = 0;
-      }
-
-      if (vm->type == BUTTON_TYPE) {
-        msg_t publish_msg;
-        publish_msg.header.cmd = PUBLISH_CMD;
-        publish_msg.header.target = BROADCAST_VAL;
-        publish_msg.header.target_mode = BROADCAST;
-        publish_msg.header.size = 1;
-        publish_msg.data[0] = random_data;
-        robus_send(vm, &publish_msg);
-
-        random_data += vm->id;
-      }
-
       usleep(LOOP_TIMEOUT);
     }
   }

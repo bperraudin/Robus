@@ -68,7 +68,7 @@ unsigned char topology_detection(vm_t* vm) {
 
     ctx.detection_mode = NO_DETECT;
 
-    return 0;
+    return newid - 1;
 }
 
 void reset_detection(void) {

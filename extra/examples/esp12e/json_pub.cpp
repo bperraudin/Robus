@@ -42,6 +42,8 @@ WebSocketsServer webSocket = WebSocketsServer(MDNS_SERVICE_PORT);
 
 void setup_wifi();
 void publish_update();
+void reset_route_table();
+unsigned char send_and_wait(msg_t msg);
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length);
 
 // route_table[id] = (type, alias)
@@ -58,17 +60,26 @@ typedef enum {
 } module_type_t;
 
 typedef enum {
-    PUBLISH_CMD,
-    IDENTIFY_CMD,
-    INTRODUCTION_CMD,
+    IDENTIFY_CMD, // Gate asks a module to identify itself
+    INTRODUCTION_CMD, // Module sends its alias and type to the gate
+
+    ASK_PUB_CMD, // Gate asks a sensor module to publish its data
+    PUBLISH_CMD, // Module publishes its data to the gate
+
     GATE_PROTOCOL_NB,
 } module_register_t;
 
 
+int i = 0;
+int response = 0;
 int listener = 0;
+int nb_modules = 0;
+
 
 vm_t *vm;
+
 msg_t identify_msg;
+msg_t publish_msg;
 
 
 void rx_cb(msg_t *msg) {
@@ -86,6 +97,8 @@ void rx_cb(msg_t *msg) {
   else if (msg->header.cmd == PUBLISH_CMD) {
     gathered_data[msg->header.source] = msg->data[0];
   }
+
+  response = 1;
 }
 
 
@@ -104,24 +117,57 @@ void setup() {
     robus_init();
     vm = robus_module_create(rx_cb, GATE_TYPE, "Larry Skywalker");
 
-    topology_detection(vm);
-
-    // Send identify msg
     identify_msg.header.cmd = IDENTIFY_CMD;
     identify_msg.header.target = BROADCAST_VAL;
     identify_msg.header.target_mode = BROADCAST;
-    robus_send(vm, &identify_msg);
+    identify_msg.header.size = 1;
+
+    publish_msg.header.cmd = ASK_PUB_CMD;
+    publish_msg.header.target = BROADCAST_VAL;
+    publish_msg.header.target_mode = BROADCAST;
+    publish_msg.header.size = 1;
 }
 
 
 void loop() {
-    webSocket.loop();
+    // Restarts topology detection
+    if (i % 10 == 0) {
+      #ifdef DEBUG
+        Serial.println("Launching topology detection");
+      #endif
+      reset_route_table();
 
-    if (listener) {
-      publish_update();
+      nb_modules = topology_detection(vm);
+      #ifdef DEBUG
+        Serial.printf("%d modules found.\n", nb_modules);
+      #endif
+
+      // Send identify msg
+      for (int mod=2; mod<=nb_modules; mod++) {
+        identify_msg.data[0] = mod;
+        send_and_wait(identify_msg);
+      }
+      #ifdef DEBUG
+        Serial.println("New route table:");
+        for (auto const &el: route_table) {
+          Serial.printf("alias \"%s\" - id %d - type %d\n",
+                        el.second.second.c_str(), el.first, el.second.first);
+        }
+      #endif
     }
 
+    webSocket.loop();
+
+    // if (listener) {
+      for (int mod=2; mod<=nb_modules; mod++) {
+        publish_msg.data[0] = mod;
+        send_and_wait(publish_msg);
+      }
+      publish_update();
+    // }
+
     delay(100);
+    i++;
 }
 
 
@@ -166,6 +212,9 @@ void publish_update() {
   payload += "}";
 
   webSocket.sendTXT(0, payload);
+  #ifdef DEBUG
+    Serial.println(payload);
+  #endif
 }
 
 void setup_wifi() {
@@ -234,6 +283,28 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
       break;
 
     }
+}
+
+#define NB_TIMEOUT 100
+#define WAIT_TIMEOUT (10)
+
+unsigned char send_and_wait(msg_t msg) {
+  response = 0;
+
+  robus_send(vm, &msg);
+
+  for (int i=0; i<NB_TIMEOUT; i++) {
+    if (response) {
+      return 0;
+    }
+    delay(WAIT_TIMEOUT);
+  }
+  return 1;
+}
+
+void reset_route_table() {
+  route_table.clear();
+  gathered_data.clear();
 }
 
 #endif /* UNIT_TEST */
