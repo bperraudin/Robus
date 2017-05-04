@@ -20,5 +20,7 @@ void msg_complete(void);
 // Callbacks send
 void catch_ack(volatile unsigned char *data);
 
+void flush (void);
+
 
 #endif /* _RECEPTION_H_ */

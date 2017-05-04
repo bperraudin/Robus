@@ -2,18 +2,29 @@
 
 #include "context.h"
 #include "detection.h"
+#include "reception.h"
 
 #define USART_BAUDRATE 9600ul
 #define DE 12
 #define RE 14
 #define PTPA 4
 #define PTPB 2
+
+
+#define TIMEOUT_VAL 2
 #include <arduino.h>
 
+
 void halLoop(void) {
+static int update_time = millis();
     while (Serial.available()) {
+        update_time = millis();
         unsigned char inChar = (char)Serial.read();
         ctx.data_cb(&inChar); // send reception byte to state machine
+    }
+    if ((millis() - update_time) > TIMEOUT_VAL) {
+        flush();
+        update_time = millis();
     }
 }
 

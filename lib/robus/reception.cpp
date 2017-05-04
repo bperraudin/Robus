@@ -24,6 +24,7 @@
 
 unsigned char keep = FALSE;
 unsigned char concernedmodules[MAX_VM_NUMBER] = {FALSE};
+unsigned short data_count = 0;
 // static timeout_t timeout; //TODO timeout management
 
 /**
@@ -56,7 +57,6 @@ unsigned short crc(unsigned char* data, unsigned short size) {
  * \param *data byte received from serial
  */
 void get_header(volatile unsigned char *data) {
-    static unsigned short data_count = 0;
 
 /*  if (timeout_ended(&timeout)){  //TODO timeout management
         data_count = 0;
@@ -152,7 +152,6 @@ void get_header(volatile unsigned char *data) {
  * \param *data byte received from serial
  */
 void get_data(volatile unsigned char *data) {
-    static unsigned short data_count = 0;
 
 /*  if (timeout_ended(&timeout)){  //TODO timeout management
         data_count = 0;
@@ -193,12 +192,16 @@ void get_data(volatile unsigned char *data) {
             } else
                 ctx.status.rx_error = TRUE;
         }
-        ctx.data_cb = get_header;
-        keep = FALSE;
-        data_count = 0;
+        flush ();
         return;
     }
     data_count++;
+}
+
+void flush (void) {
+    ctx.data_cb = get_header;
+    keep = FALSE;
+    data_count = 0;
 }
 
 /**
