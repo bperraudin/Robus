@@ -47,23 +47,7 @@ ISR(USART_RX_vect)
  * \brief PTPB interrupt
  */
 ISR (INT0_vect) {
-    static char ptp_stateB = 1;
-    if (ptp_stateB == 0) {
-        ptp_released(BRANCH_B);
-        reset_PTP(BRANCH_B);
-        ptp_stateB = 1;
-    }
-    else {
-        hal_timeout(2);
-        if (PTPB_READ == 0){
-            ptp_detected(BRANCH_B);
-            EICRA |= (1 << ISC00); // reverse the detection edge
-            ptp_stateB = 0;
-        }
-        else{
-            poke_detected(BRANCH_B);
-        }
-    }
+    ptp_handler(BRANCH_B);
 }
 
 /**
@@ -71,25 +55,17 @@ ISR (INT0_vect) {
  * \brief PTPA interrupt
  */
 ISR (INT1_vect) {
-    static char ptp_stateA = 1;
-    if (ptp_stateA == 0) {
-        ptp_released(BRANCH_A);
-        reset_PTP(BRANCH_A);
-        ptp_stateA = 1;
-    }
-    else {
-        hal_timeout(2);
-        if (PTPA_READ == 0){
-            ptp_detected(BRANCH_A);
-            EICRA |= (1 << ISC10); // reverse the detection edge
-            ptp_stateA = 0;
-        }
-        else{
-            poke_detected(BRANCH_A);
-        }
-    }
+    ptp_handler(BRANCH_A);
 }
 
+void reverse_detection(branch_t branch) {
+    if (branch == BRANCH_A) {
+        EICRA |= (1 << ISC10); // reverse the detection edge
+    }
+    if (branch == BRANCH_B) {
+        EICRA |= (1 << ISC00); // reverse the detection edge
+    }
+}
 
 void set_PTP(branch_t branch) {
     if (branch == BRANCH_A) {
@@ -126,12 +102,6 @@ void reset_PTP(branch_t branch) {
         EICRA &= ~(1 << ISC00); // set to trigger on falling edge event
         EIMSK |= (1 << INT0); // Turns on INT0
     }
-}
-
-void send_poke(branch_t branch) {
-    set_PTP(branch);
-    hal_timeout(1);
-    reset_PTP(branch);
 }
 
 void hal_timeout(int factor) {

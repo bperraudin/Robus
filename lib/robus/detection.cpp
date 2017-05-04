@@ -8,8 +8,34 @@
 #include "sys_msg.h"
 #include "hal.h"
 
+void send_poke(branch_t branch) {
+        set_PTP(branch);
+        hal_timeout(1);
+        reset_PTP(branch);
+}
+
+void ptp_handler(branch_t branch) {
+    static char ptp_state[NO_BRANCH] = {1, 1};
+    if (ptp_state[branch] == 0) {
+        ptp_released(branch);
+        reset_PTP(branch);
+        ptp_state[branch] = 1;
+    }
+    else {
+        if (ctx.detection.expect == KEEPLINE) {
+            ptp_detected(branch);
+            // reverse the detection edge
+            reverse_detection(branch);
+            ptp_state[branch] = 0;
+        }
+        else{
+            poke_detected(branch);
+        }
+    }
+}
 
 unsigned char poke(branch_t branch) {
+    ctx.detection.expect = KEEPLINE;
     if (branch == BRANCH_A) {
         send_poke(BRANCH_A);
     }
@@ -30,6 +56,7 @@ unsigned char poke(branch_t branch) {
 }
 
 void poke_detected(branch_t branch) {
+    hal_timeout(2); //This is an interrupt no delay should be here...
     set_PTP(branch);
     ctx.detection.keepline = branch;
 }
@@ -81,6 +108,7 @@ void reset_detection(void) {
 
 void ptp_released(branch_t branch) {
     ctx.detection.keepline = NO_BRANCH;
+    ctx.detection.expect = POKE;
 
     if (ctx.detection_mode != MASTER_DETECT && ctx.detection.detection_end) {
         if (branch == BRANCH_A) {

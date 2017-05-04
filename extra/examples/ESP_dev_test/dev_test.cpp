@@ -8,16 +8,17 @@
 void halLoop(void);
 
 typedef enum {
-    TEST_CMD,
-    NO_OVERLAP_TARGET_CMD,
+    LED,
     MODULE_PROTOCOL_NB
 } module_register_t;
 
 
 void rx_cb(msg_t *msg) {
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(1);
-    digitalWrite(LED_BUILTIN, HIGH);
+    if (msg->header.cmd == LED)
+        if (msg->data[0])
+            digitalWrite(LED_BUILTIN, LOW);
+        if (!msg->data[0])
+            digitalWrite(LED_BUILTIN, HIGH);
 }
 
 msg_t msg;
@@ -30,21 +31,29 @@ void setup() {
 
     robus_init();
     vm = robus_module_create(rx_cb, 1, "Larry Skywalker");
-    vm->id = 42;
-
-    msg.header.cmd = TEST_CMD;
-    msg.header.target = BROADCAST_VAL;
-    msg.header.target_mode = BROADCAST;
-    msg.header.size = 2;
-    msg.data[0] = 1;
-    msg.data[1] = 2;
+    vm->id = 3;
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(5000);
+    digitalWrite(LED_BUILTIN, HIGH);
+    topology_detection(vm);
 }
 
 void loop() {
     halLoop();
-    digitalWrite(LED_BUILTIN, LOW);
-    robus_send(vm, &msg);
-    delay(1000);
+    msg_t msg;
+    msg.header.cmd = LED;
+    msg.header.target_mode = ID;
+    msg.header.size = 1;
+    for (int i = 2; i<5; i++) {
+        msg.header.target = i;
+        msg.data[0] = 1;
+        robus_send(vm, &msg);
+        delay(1000);
+        msg.data[0] = 0;
+        robus_send(vm, &msg);
+        delay(1000);
+    }
+
 }
 
 #endif /* UNIT_TEST */
