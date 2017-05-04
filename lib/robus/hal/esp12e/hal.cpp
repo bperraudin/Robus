@@ -8,6 +8,12 @@
 #include "HardwareSerial.h"
 #include <arduino.h>
 
+void halLoop(void) {
+    while (Serial.available()) {
+        unsigned char inChar = (char)Serial.read();
+        ctx.data_cb(&inChar); // send reception byte to state machine
+    }
+}
 void hal_init(void) {
     Serial.begin(USART_BAUDRATE);
     Serial.swap();

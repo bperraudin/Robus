@@ -5,7 +5,7 @@
 
 #include <Arduino.h>
 
-void hal_loop();
+void halLoop(void);
 
 typedef enum {
     TEST_CMD,
@@ -41,6 +41,7 @@ void setup() {
 }
 
 void loop() {
+    halLoop();
     digitalWrite(LED_BUILTIN, LOW);
     robus_send(vm, &msg);
     delay(1000);
