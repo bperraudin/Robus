@@ -22,6 +22,8 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
+volatile int pub = 0;
+
 /**
  * \enum msg_dir_t
  * \brief Module specific register enumerator.
@@ -51,16 +53,29 @@ typedef enum {
  * \param dir Message direction. (That will be remove!)
  * \param msg Received message.
  */
-void rx_cb(msg_t *msg) {
+
+msg_t msg;
+vm_t *vm1;
+
+void rx_cb(msg_t *plop) {
     /*
      * Add your RX code here.
      */
-     if (msg->header.cmd == LED)
-         if (msg->data[0])
+     if (plop->header.cmd == LED) {
+         if (plop->data[0]) {
              PORTB |= (1<<PORTB5);
-         if (!msg->data[0])
+             msg.data[0] = 1;
+           }
+         if (!plop->data[0]) {
              PORTB &= ~(1<<PORTB5);
-
+             msg.data[0] = 0;
+           }
+      msg.header.target = plop->header.source;
+      // #ifndef MASTER_MODULE
+      // robus_send(vm1, &msg);
+      // #endif
+      pub = 1;
+    }
 }
 
 
@@ -71,7 +86,6 @@ void rx_cb(msg_t *msg) {
  * \return integer
  */
 int main(void) {
-    vm_t *vm1;
     robus_init();
     //Blink debug
     DDRB |= (1<<DDB5); //Set the 6th bit on PORTB (i.e. PB5) to 1 => output
@@ -93,13 +107,13 @@ int main(void) {
 #ifdef MASTER_MODULE
     _delay_ms(1000);
     topology_detection(vm1);
+    // vm1->id = 1;
 #endif
-
+  // vm1->id = 2;
     /*
      * Add your main code here.
      */
-     msg_t msg;
-     msg.header.target = 2;
+
      msg.header.cmd = LED;
      msg.header.target_mode = ID;
      msg.header.size = 1;
@@ -111,11 +125,16 @@ int main(void) {
             msg.header.target = i;
             msg.data[0] = 1;
             robus_send(vm1, &msg);
-            _delay_ms(1000);
+            _delay_ms(10);
             msg.data[0] = 0;
             robus_send(vm1, &msg);
-            _delay_ms(1000);
+            _delay_ms(10);
         }
+    #else
+    if (pub) {
+      robus_send(vm1, &msg);
+      pub = 0;
+    }
     #endif
      }
 

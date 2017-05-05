@@ -31,9 +31,9 @@ void setup() {
 
     robus_init();
     vm = robus_module_create(rx_cb, 1, "Larry Skywalker");
-    vm->id = 3;
+    // vm->id = 3;
     digitalWrite(LED_BUILTIN, LOW);
-    delay(5000);
+    delay(1000);
     digitalWrite(LED_BUILTIN, HIGH);
     topology_detection(vm);
 }
@@ -48,10 +48,10 @@ void loop() {
         msg.header.target = i;
         msg.data[0] = 1;
         robus_send(vm, &msg);
-        delay(1000);
+        delay(100);halLoop();
         msg.data[0] = 0;
         robus_send(vm, &msg);
-        delay(1000);
+        delay(100);halLoop();
     }
 
 }
