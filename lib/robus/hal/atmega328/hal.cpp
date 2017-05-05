@@ -1,4 +1,5 @@
 #include "hal.h"
+#include "reception.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
@@ -33,12 +34,26 @@
 #define DISABLE_TX DE_PORT &= ~(1<<DE_PIN)
 #define DISABLE_RX RE_PORT |= (1<<RE_PIN)
 
+volatile unsigned int millis = 0;
+#define TIMEOUT_VAL 2
+
+ ISR (TIMER0_COMPA_vect)  // timer0 overflow interrupt
+ {
+    // TCNT0 = 0;
+    if (millis == TIMEOUT_VAL) {
+        flush();
+        millis = 0;
+    }
+    millis++;
+}
+
 /**
  * \fn ISR(USART_RX_vect)
  * \brief reception interrupt
  */
 ISR(USART_RX_vect)
 {
+    millis = 0;
     ctx.data_cb(&UDR0); // send reception byte to state machine
 }
 
@@ -115,6 +130,11 @@ void hal_timeout(int factor) {
  */
 void hal_init(void) {
     cli();
+    TCCR0A |= (1 << WGM01); // Set the Timer Mode to CTC
+    OCR0A = 0xF9; // Set the value that you want to count to
+    TIMSK0 |= (1 << OCIE0A);    //Set the ISR COMPA vect
+     TCCR0B |= (1 << CS01) | (1 << CS00); // set prescaler to 64 and start the timer
+
     // Set ptp lines
     PTPA_SETUP_PORT &= ~(1 << PTPA_SETUP_PIN);     // Clear the PTPA pin
     PTPB_SETUP_PORT &= ~(1 << PTPB_SETUP_PIN);     // Clear the PTPB pin
