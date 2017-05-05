@@ -13,7 +13,7 @@
 #define _ROBUS_H_
 
 #define MAX_ALIAS_SIZE 16
-#define MAX_DATA_MSG_SIZE 512
+#define MAX_DATA_MSG_SIZE 256
 #define MAX_MULTICAST_ADDRESS 256
 
 enum {
