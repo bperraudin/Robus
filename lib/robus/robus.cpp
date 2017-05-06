@@ -98,7 +98,9 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
     msg->data[msg->header.size] = (unsigned char)crc_val;
     msg->data[msg->header.size + 1] = (unsigned char)(crc_val >> 8);
     // wait tx unlock
-    while (ctx.tx_lock);
+    while(ctx.tx_lock) {
+        hal_delay_ms(1);
+    }
     // Send message
     if (hal_transmit(msg->stream, full_size))
         return 1;
