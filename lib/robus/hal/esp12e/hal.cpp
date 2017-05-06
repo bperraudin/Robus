@@ -22,10 +22,10 @@ static int update_time = millis();
         unsigned char inChar = (char)Serial.read();
         ctx.data_cb(&inChar); // send reception byte to state machine
     }
-    if ((millis() - update_time) > TIMEOUT_VAL) {
-        flush();
-        update_time = millis();
-    }
+   if ((millis() - update_time) > TIMEOUT_VAL && ctx.tx_lock) {
+       timeout();
+       update_time = millis();
+   }
 }
 
 /**
@@ -80,14 +80,14 @@ for (unsigned short i = 0; i<size; i++) {
     Serial.write(data[i]); // Send data
     while(Serial.availableForWrite() != plop);
 }
-hal_timeout(1);
+hal_delay_ms(1);
 digitalWrite(DE, 0);
 digitalWrite(RE, 0);
 
     return 0;
 }
 
-void hal_timeout(int factor) {
+void hal_delay_ms(int factor) {
     delay(factor);
 }
 

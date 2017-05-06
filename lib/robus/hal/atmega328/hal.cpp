@@ -34,17 +34,16 @@
 #define DISABLE_TX DE_PORT &= ~(1<<DE_PIN)
 #define DISABLE_RX RE_PORT |= (1<<RE_PIN)
 
-volatile unsigned int millis = 0;
+volatile unsigned int hal_millis = 0;
 #define TIMEOUT_VAL 2
 
  ISR (TIMER0_COMPA_vect)  // timer0 overflow interrupt
  {
-    // TCNT0 = 0;
-    if (millis == TIMEOUT_VAL) {
-        flush();
-        millis = 0;
+    if (hal_millis == TIMEOUT_VAL && ctx.tx_lock) {
+        timeout();
+        hal_millis = 0;
     }
-    millis++;
+    if (hal_millis < 0xFFFF) hal_millis++;
 }
 
 /**
@@ -53,7 +52,8 @@ volatile unsigned int millis = 0;
  */
 ISR(USART_RX_vect)
 {
-    millis = 0;
+    TCNT0 = 0;
+    hal_millis = 0;
     ctx.data_cb(&UDR0); // send reception byte to state machine
 }
 
@@ -119,7 +119,7 @@ void reset_PTP(branch_t branch) {
     }
 }
 
-void hal_timeout(int factor) {
+void hal_delay_ms(int factor) {
     // TODO: do something clever here...
     for(int i=0; i<factor; i++)_delay_ms(1);
 }

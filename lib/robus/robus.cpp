@@ -13,7 +13,7 @@
 #include "cmd.h"
 
 // Creation of the robus context. This variable is used in all files of this lib.
-context_t ctx;
+volatile context_t ctx;
 
 // Startup and network configuration
 void robus_init(void) {
@@ -25,6 +25,8 @@ void robus_init(void) {
     ctx.id = DEFAULTID;
     // VOID Module type
     ctx.type = NULLBOARD;
+    // no transmission lock
+    ctx.tx_lock = FALSE;
 
     // init detection structure
     // No detection already done
@@ -95,6 +97,8 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
     // Write the CRC into the message.
     msg->data[msg->header.size] = (unsigned char)crc_val;
     msg->data[msg->header.size + 1] = (unsigned char)(crc_val >> 8);
+    // wait tx unlock
+    while (ctx.tx_lock);
     // Send message
     if (hal_transmit(msg->stream, full_size))
         return 1;

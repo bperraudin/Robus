@@ -51,6 +51,29 @@ unsigned short crc(unsigned char* data, unsigned short size) {
 }
 
 /**
+ * \fn void timeout(flush)
+ * \brief manage timeout event
+ *
+ * \return
+ */
+void timeout (void) {
+    ctx.tx_lock = FALSE;
+    flush();
+}
+
+/**
+ * \fn void flush(flush)
+ * \brief reset the reception state machine
+ *
+ * \return
+ */
+void flush (void) {
+    ctx.data_cb = get_header;
+    keep = FALSE;
+    data_count = 0;
+}
+
+/**
  * \fn void get_header(volatile unsigned char *data)
  * \brief catch a complete header
  *
@@ -58,10 +81,7 @@ unsigned short crc(unsigned char* data, unsigned short size) {
  */
 void get_header(volatile unsigned char *data) {
 
-/*  if (timeout_ended(&timeout)){  //TODO timeout management
-        data_count = 0;
-    }
-    timeout_init(&timeout, 20);*/
+    ctx.tx_lock = TRUE;
     // Catch a byte.
     CURRENTMSG.header.unmap[data_count++] = *data;
 
@@ -198,11 +218,6 @@ void get_data(volatile unsigned char *data) {
     data_count++;
 }
 
-void flush (void) {
-    ctx.data_cb = get_header;
-    keep = FALSE;
-    data_count = 0;
-}
 
 /**
  * \fn void catch_ack(volatile unsigned char *data)

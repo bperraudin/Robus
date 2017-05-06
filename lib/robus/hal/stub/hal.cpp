@@ -29,7 +29,7 @@ void send_poke(branch_t branch) {
 
 }
 
-void hal_timeout(int factor) {
+void hal_delay_ms(int factor) {
 
 }
 

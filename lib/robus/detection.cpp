@@ -10,7 +10,7 @@
 
 void send_poke(branch_t branch) {
         set_PTP(branch);
-        hal_timeout(1);
+        hal_delay_ms(1);
         reset_PTP(branch);
 }
 
@@ -49,14 +49,14 @@ unsigned char poke(branch_t branch) {
         if (ctx.detection.keepline == branch) {
             return 1;
         }
-        hal_timeout(1);
+        hal_delay_ms(1);
     }
 
     return 0;
 }
 
 void poke_detected(branch_t branch) {
-    hal_timeout(2); //This is an interrupt no delay should be here...
+    hal_delay_ms(2); //This is an interrupt no delay should be here...
     set_PTP(branch);
     ctx.detection.keepline = branch;
 }
@@ -82,14 +82,14 @@ unsigned char topology_detection(vm_t* vm) {
         // loop while PTP_A is enabled
         while (ctx.detection.keepline != NO_BRANCH) {
             set_extern_id(vm, BROADCAST, BROADCAST_VAL, newid++);
-            hal_timeout(15);
+            hal_delay_ms(15);
         }
     }
 
     if (poke(BRANCH_B)) {
         while (ctx.detection.keepline != NO_BRANCH) {
             set_extern_id(vm, BROADCAST, BROADCAST_VAL, newid++);
-            hal_timeout(15);
+            hal_delay_ms(15);
         }
     }
 

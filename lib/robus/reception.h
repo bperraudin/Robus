@@ -21,6 +21,7 @@ void msg_complete(void);
 void catch_ack(volatile unsigned char *data);
 
 void flush (void);
+void timeout (void);
 
 
 #endif /* _RECEPTION_H_ */

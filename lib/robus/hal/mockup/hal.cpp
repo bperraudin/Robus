@@ -43,7 +43,7 @@ unsigned char hal_transmit(unsigned char* data, unsigned short size) {
     return 0;
 }
 
-void hal_timeout(int factor) {
+void hal_delay_ms(int factor) {
     usleep(10000 * factor);
 }
 
