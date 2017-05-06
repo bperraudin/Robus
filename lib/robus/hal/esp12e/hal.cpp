@@ -13,19 +13,22 @@
 
 #define TIMEOUT_VAL 2
 #include <arduino.h>
+#include "user_interface.h"
+os_timer_t myTimer;
 
-
-void halLoop(void) {
-static int update_time = millis();
+// start of timerCallback
+void timerCallback(void *pArg) {
+    static unsigned int hal_millis = 0;
     while (Serial.available()) {
-        update_time = millis();
+        hal_millis = 0;
         unsigned char inChar = (char)Serial.read();
         ctx.data_cb(&inChar); // send reception byte to state machine
     }
-   if ((millis() - update_time) > TIMEOUT_VAL && ctx.tx_lock) {
-       timeout();
-       update_time = millis();
-   }
+    if (hal_millis == TIMEOUT_VAL && ctx.tx_lock) {
+        timeout();
+        hal_millis = 0;
+    }
+    if (hal_millis < 0xFFFF) hal_millis++;
 }
 
 /**
@@ -70,6 +73,10 @@ void hal_init(void) {
     attachInterrupt(PTPA, ptpa_handler, FALLING);
     pinMode(PTPB, INPUT_PULLUP);
     attachInterrupt(PTPB, ptpb_handler, FALLING);
+
+    // configure timer
+    os_timer_setfn(&myTimer, timerCallback, NULL);
+    os_timer_arm(&myTimer, 1, true);
 }
 
 unsigned char hal_transmit(unsigned char *data, unsigned short size) {

@@ -5,8 +5,6 @@
 
 #include <Arduino.h>
 
-void halLoop(void);
-
 typedef enum {
     LED,
     MODULE_PROTOCOL_NB
@@ -39,7 +37,6 @@ void setup() {
 }
 
 void loop() {
-    halLoop();
     msg_t msg;
     msg.header.cmd = LED;
     msg.header.target_mode = ID;
@@ -48,10 +45,10 @@ void loop() {
         msg.header.target = i;
         msg.data[0] = 1;
         robus_send(vm, &msg);
-        delay(100);halLoop();
+        delay(100);
         msg.data[0] = 0;
         robus_send(vm, &msg);
-        delay(100);halLoop();
+        delay(100);
     }
 
 }
