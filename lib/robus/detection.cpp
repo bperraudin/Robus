@@ -45,7 +45,7 @@ unsigned char poke(branch_t branch) {
 
     // Wait a keepline
     // TODO: improve the way we deal with timeout
-    for (int i=0; i < 10; i++) {
+    for (int i=0; i < 2; i++) {
         if (ctx.detection.keepline == branch) {
             return 1;
         }
@@ -82,14 +82,17 @@ unsigned char topology_detection(vm_t* vm) {
         // loop while PTP_A is enabled
         while (ctx.detection.keepline != NO_BRANCH) {
             set_extern_id(vm, BROADCAST, BROADCAST_VAL, newid++);
-            hal_delay_ms(15);
+            hal_delay_ms(4);
         }
     }
 
+    ctx.detection_mode = MASTER_DETECT;
+    ctx.detection.detected_vm = ctx.vm_number;
+    ctx.detection.detection_end = TRUE;
     if (poke(BRANCH_B)) {
         while (ctx.detection.keepline != NO_BRANCH) {
             set_extern_id(vm, BROADCAST, BROADCAST_VAL, newid++);
-            hal_delay_ms(15);
+            hal_delay_ms(4);
         }
     }
 
