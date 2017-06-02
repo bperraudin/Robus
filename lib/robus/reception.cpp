@@ -296,7 +296,7 @@ void msg_complete() {
 
                 // Call CM callback
                 if (CURRENTMODULE.rx_cb != 0) {
-                    CURRENTMODULE.rx_cb(CURRENTMODULE.msg_pt);
+                    CURRENTMODULE.rx_cb(&CURRENTMODULE, CURRENTMODULE.msg_pt);
                     CURRENTMODULE.message_available--;
                 }
                 else {
@@ -311,7 +311,7 @@ void msg_complete() {
         // Call CM callback
         if (CURRENTMODULE.rx_cb != 0) {
             CURRENTMSG.header.cmd -= PROTOCOL_CMD_NB;
-            CURRENTMODULE.rx_cb(CURRENTMODULE.msg_pt);
+            CURRENTMODULE.rx_cb(&CURRENTMODULE, CURRENTMODULE.msg_pt);
             CURRENTMSG.header.cmd += PROTOCOL_CMD_NB;
             CURRENTMODULE.message_available--;
         }

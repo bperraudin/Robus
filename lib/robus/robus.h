@@ -80,8 +80,6 @@ typedef struct __attribute__((__packed__)){
     };
 }msg_t;
 
-typedef void (*RX_CB) (msg_t *msg);
-
 /**
  * \struct vm_t
  * \brief Virtual Module Structure
@@ -89,9 +87,11 @@ typedef void (*RX_CB) (msg_t *msg);
  * This structure is used to manage virtual modules
  * please refer to the documentation
  */
-typedef struct __attribute__((__packed__)){
+ typedef struct __attribute__((__packed__)) vm_t;
+struct vm_t{
     // Callback pointers
-    RX_CB rx_cb;        /*!< User side slave RX callback. */
+    // RX_CB rx_cb;
+    void (*rx_cb) (vm_t* vm, msg_t *msg);        /*!< User side slave RX callback. The void* is the vm_t* but we can't do a vm_tception... */
 
     // Module infomations
     unsigned short id;       /*!< Module ID. */
@@ -105,7 +105,9 @@ typedef struct __attribute__((__packed__)){
     unsigned char message_available; /*!< signal a new message available */
     unsigned char data_to_read; /*!< data ready to be readed */
 
-}vm_t;
+};
+
+typedef void (*RX_CB) (vm_t* vm, msg_t *msg);
 
 /**
  * \fn void robus_init(void)
