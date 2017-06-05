@@ -14,6 +14,8 @@
 #include "sys_msg.h"
 #include "time.h"
 
+#include <Arduino.h>
+
 
 #ifdef DEBUG
 #include <stdio.h>
@@ -200,7 +202,7 @@ void get_data(volatile unsigned char *data) {
                     for (int i = 0; i < ctx.vm_number; i++) {
                         if (concernedmodules[i]) {
                             ctx.alloc_msg[ctx.current_buffer] = i;
-                            msg_complete();
+                            if (msg_complete())break;
                             concernedmodules[i] = FALSE;
                         }
                     }
@@ -237,7 +239,7 @@ void catch_ack(volatile unsigned char *data) {
  *
  * \param *data byte received from serial
  */
-void msg_complete() {
+char msg_complete() {
     CURRENTMODULE.message_available++;
     if (CURRENTMSG.header.target_mode == ID ||
         CURRENTMSG.header.target_mode == IDACK ||
@@ -256,10 +258,12 @@ void msg_complete() {
                     ctx.vm_table[ctx.detection.detected_vm++].id =
                         (((unsigned short)CURRENTMSG.data[1]) |
                         ((unsigned short)CURRENTMSG.data[0] << 8));
+                          digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 
                     // Check if that was the last virtual module
                     if (ctx.detection.detected_vm == ctx.vm_number) {
                         ctx.detection.detection_end = TRUE;
+                          digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 
                         if (ctx.detection.keepline == BRANCH_A) {
                             if (!poke(BRANCH_B)) {
@@ -274,6 +278,7 @@ void msg_complete() {
                             }
                         }
                     }
+                    return 1;
                 }
                 else if (CURRENTMSG.header.target_mode != BROADCAST) {
                     CURRENTMODULE.id = (((unsigned short)CURRENTMSG.data[1]) |
@@ -319,4 +324,5 @@ void msg_complete() {
             CURRENTMODULE.data_to_read = CURRENTMSG.header.size;
         }
     }
+    return 0;
 }

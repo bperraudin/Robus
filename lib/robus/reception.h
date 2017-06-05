@@ -15,7 +15,7 @@ unsigned short crc(unsigned char* data, unsigned short size);
 // Callbacks reception
 void get_header(volatile unsigned char *data);
 void get_data(volatile unsigned char *data);
-void msg_complete(void);
+char msg_complete(void);
 
 // Callbacks send
 void catch_ack(volatile unsigned char *data);
