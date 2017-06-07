@@ -199,6 +199,10 @@ void get_data(volatile unsigned char *data) {
                     msg_complete();
                 }
                 else {
+                    if(ctx.vm_number == 0) {
+                        // no module created, but save this ID in the void module.
+                        msg_complete();
+                    }
                     for (int i = 0; i < ctx.vm_number; i++) {
                         if (concernedmodules[i]) {
                             ctx.alloc_msg[ctx.current_buffer] = i;
@@ -261,7 +265,7 @@ char msg_complete() {
                           digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 
                     // Check if that was the last virtual module
-                    if (ctx.detection.detected_vm == ctx.vm_number) {
+                    if (ctx.detection.detected_vm >= ctx.vm_number) {
                         ctx.detection.detection_end = TRUE;
                           digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 
