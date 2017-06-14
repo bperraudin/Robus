@@ -13,6 +13,7 @@ void hal_delay_ms(int factor);
 
 void set_PTP(branch_t branch);
 void reset_PTP(branch_t branch);
+unsigned char get_PTP(branch_t branch);
 void reverse_detection(branch_t branch);
 
 #endif /* _HAL_H_ */

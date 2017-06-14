@@ -192,3 +192,12 @@ unsigned char hal_transmit(unsigned char* data, unsigned short size) {
     DISABLE_TX;
     return 0;
 }
+
+unsigned char get_PTP(branch_t branch) {
+  if (branch == BRANCH_A) {
+      return (PTPA_READ == 0);
+  }
+  else if (branch == BRANCH_B) {
+      return (PTPB_READ == 0);
+  }
+}

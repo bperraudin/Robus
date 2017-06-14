@@ -126,3 +126,12 @@ void reset_PTP(branch_t branch) {
         attachInterrupt(PTPB, ptpa_handler, FALLING); // Turns on PTPB interruption on falling edge
     }
 }
+
+unsigned char get_PTP(branch_t branch) {
+  if (branch == BRANCH_A) {
+      return (digitalRead(PTPA) == 0);
+  }
+  else if (branch == BRANCH_B) {
+      return (digitalRead(PTPB) == 0);
+  }
+}
