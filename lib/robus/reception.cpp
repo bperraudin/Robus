@@ -14,9 +14,6 @@
 #include "sys_msg.h"
 #include "time.h"
 
-#include <Arduino.h>
-
-
 #ifdef DEBUG
 #include <stdio.h>
 #endif
@@ -238,7 +235,7 @@ void catch_ack(volatile unsigned char *data) {
 }
 
 /**
- * \fn void msg_complete($)
+ * \fn void msg_complete()
  * \brief the message is now complete, manage it.
  *
  * \param *data byte received from serial
@@ -255,28 +252,27 @@ char msg_complete() {
                 if ((CURRENTMSG.header.target_mode == BROADCAST) &
                     (ctx.detection.keepline != NO_BRANCH) &
                     (!ctx.detection.detection_end)) {
-
                     // We are on topology detection mode, and this is our turn
                     // Save id for the next module
-
                     ctx.vm_table[ctx.detection.detected_vm++].id =
                         (((unsigned short)CURRENTMSG.data[1]) |
                         ((unsigned short)CURRENTMSG.data[0] << 8));
-                          digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 
                     // Check if that was the last virtual module
                     if (ctx.detection.detected_vm >= ctx.vm_number) {
                         ctx.detection.detection_end = TRUE;
-                          digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-
                         if (ctx.detection.keepline == BRANCH_A) {
+                            // check if we have a module on the other side
                             if (!poke(BRANCH_B)) {
+                                // no mudule on the other side, free the ptp line
                                 reset_PTP(BRANCH_A);
                                 reset_detection();
                             }
                         }
                         else if (ctx.detection.keepline == BRANCH_B) {
+                            // check if we have a module on the other side
                             if (!poke(BRANCH_A)) {
+                                // no mudule on the other side, free the ptp line
                                 reset_PTP(BRANCH_B);
                                 reset_detection();
                             }

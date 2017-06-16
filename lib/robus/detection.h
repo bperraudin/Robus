@@ -23,7 +23,7 @@ typedef enum {
 
 typedef enum {
     POKE,
-    KEEPLINE
+    RELEASE
 }expected_detection_t;
 
 typedef struct __attribute__((__packed__)){
@@ -35,12 +35,7 @@ typedef struct __attribute__((__packed__)){
 
 unsigned char topology_detection(vm_t* vm);
 void reset_detection(void);
-
 unsigned char poke(branch_t branch);
-void poke_detected(branch_t branch);
-
-void ptp_detected(branch_t branch);
-void ptp_released(branch_t branch);
 void ptp_handler(branch_t branch);
 
 #endif /* _DETECTION_H_ */
