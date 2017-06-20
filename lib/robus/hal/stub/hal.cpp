@@ -38,5 +38,9 @@ void set_PTP(branch_t branch) {
 }
 
 void reset_PTP(branch_t branch) {
+
+}
+
+void reverse_detection(branch_t branch) {
   
 }
