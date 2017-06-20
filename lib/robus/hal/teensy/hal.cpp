@@ -15,9 +15,9 @@
 #include <arduino.h>
 #include <TimerOne.h>
 
+volatile unsigned int hal_millis = 0;
 
 void timerCallback() {
-    static unsigned int hal_millis = 0;
     while (Serial2.available()) {
         unsigned char inChar = (char)Serial2.read();
         ctx.data_cb(&inChar); // send reception byte to state machine
@@ -90,10 +90,12 @@ unsigned char hal_transmit(unsigned char *data, unsigned short size) {
     for (unsigned short i = 0; i<size; i++) {
         Serial2.write(data[i]); // Send data
         while(Serial2.availableForWrite() != plop);
+        hal_millis = 0;
     }
     hal_delay_ms(1);
     digitalWrite(DE, 0);
     digitalWrite(RE, 0);
+    hal_millis = 0;
 
     return 0;
 }

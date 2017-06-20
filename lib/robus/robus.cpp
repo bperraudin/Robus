@@ -96,6 +96,8 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
     while(ctx.tx_lock) {
         hal_delay_ms(1);
     }
+    // re-lock the transmission
+    ctx.tx_lock = TRUE;
     // Send message
     if (hal_transmit(msg->stream, full_size))
         return 1;

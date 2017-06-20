@@ -185,11 +185,13 @@ unsigned char hal_transmit(unsigned char* data, unsigned short size) {
         loop_until_bit_is_set(UCSR0A, UDRE0); // Wait transmit buffer ready
         UDR0 = data[i]; // Send data
         UCSR0A |= (1<<TXC0); // Clear end transmission flag
+        hal_millis = 0;
     }
     loop_until_bit_is_set(UCSR0A, TXC0); // wait transmission end
     //PORTD &= ~(1<<PORTD3) & ~(1<<PORTD2); // disable TX and enable RX
     ENABLE_RX;
     DISABLE_TX;
+    hal_millis = 0;
     return 0;
 }
 

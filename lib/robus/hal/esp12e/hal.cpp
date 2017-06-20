@@ -15,10 +15,10 @@
 #include <arduino.h>
 #include "user_interface.h"
 os_timer_t myTimer;
+volatile unsigned int hal_millis = 0;
 
 // start of timerCallback
 void timerCallback(void *pArg) {
-    static unsigned int hal_millis = 0;
     while (Serial.available()) {
         hal_millis = 0;
         unsigned char inChar = (char)Serial.read();
@@ -86,10 +86,12 @@ digitalWrite(RE, 1);
 for (unsigned short i = 0; i<size; i++) {
     Serial.write(data[i]); // Send data
     while(Serial.availableForWrite() != plop);
+    hal_millis = 0;
 }
 hal_delay_ms(1);
 digitalWrite(DE, 0);
 digitalWrite(RE, 0);
+hal_millis = 0;
 
     return 0;
 }
