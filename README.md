@@ -33,25 +33,25 @@ TODO: Link to API/guidelines
 
 You just need to use standard modules and one of our high level programing interfaces such as Scratch or Python.
 
-Follow [this tutorials](extra/doc/beginners.md) to learn how.
+Follow [this tutorials](doc/beginners.md) to learn how.
 
 > I want to create my robot and master each and every details of the robot's behavior.
 
 In addition to our high level programming interfaces, you will need to modify some low level embeded code in the modules. Robus allows you to create low level behavior localized on each specific module. This is vastly facilitated by the Robus messaging system freeing you from the cumbersome protocol writting process and module/service identification.
 
-Follow [this tutorial](extra/doc/intermediates.md) to learn how.
+Follow [this tutorial](doc/intermediates.md) to learn how.
 
 > I want to develop a new sensor or actuator, can I prototype quickly a new module.
 
 TODO: Prottyping board will be available with the chip embeded by easy access to the pins...
 
-Follow [this tutorial](extra/doc/advanced.md) to learn how.
+Follow [this tutorial](doc/advanced.md) to learn how.
 
 > My needs are even more specific, I want to develop mass-produced modules.
 
 You will need to understand how Robus works and can be integrate in new electronics designs, fortunatly you will see great help in our debugging and sniffing tools.
 
-Follow [this tutorial](extra/doc/developers.md) to learn how.
+Follow [this tutorial](doc/developers.md) to learn how.
 
 ## Installation
 
