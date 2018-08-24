@@ -288,12 +288,12 @@ char msg_complete() {
             case WRITE_ALIAS:
             {
                 int i;
-                // Make a clean copy with full 0 at the end.
-                memset(CURRENTMODULE.alias, 0, sizeof(CURRENTMODULE.alias));
+                // Make a clean copy with full \0 at the end.
+                memset(CURRENTMODULE.alias, '\0', sizeof(CURRENTMODULE.alias));
+                if (CURRENTMSG.header.size > 16) CURRENTMSG.header.size = 16;
                 for (i = 0; i < CURRENTMSG.header.size; i++) {
                     CURRENTMODULE.alias[i] = CURRENTMSG.data[i];
                 }
-                CURRENTMODULE.alias[i] = '\0';
                 write_alias(ctx.alloc_msg[ctx.current_buffer], CURRENTMODULE.alias);
             break;}
             case GET_ID:
