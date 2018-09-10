@@ -179,11 +179,8 @@ unsigned char get_PTP(branch_t branch) {
 }
 
 // ******** Alias management ****************
-inline uint16_t eeprom_compute_addr(int id){
-    return id * (MAX_ALIAS_SIZE +1);
-}
 void write_alias(unsigned short id, char* alias) {
-     const uint16_t addr = eeprom_compute_addr(id);
+     const uint16_t addr = id * (MAX_ALIAS_SIZE +1);
      for (uint8_t i=0; i<MAX_ALIAS_SIZE; i++) {
     	 // here we save an uint8_t on an uint16_t
     	 EE_WriteVariable(addr + i, (uint16_t)alias[i]);
@@ -191,7 +188,7 @@ void write_alias(unsigned short id, char* alias) {
 }
 
 char read_alias(unsigned short id, char* alias) {
-     const uint16_t addr = eeprom_compute_addr(id);
+     const uint16_t addr = id * (MAX_ALIAS_SIZE +1);
      uint16_t data;
      EE_ReadVariable(addr, &data);
 
