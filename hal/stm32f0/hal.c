@@ -180,11 +180,14 @@ unsigned char get_PTP(branch_t branch) {
 
 // ******** Alias management ****************
 void write_alias(unsigned short id, char* alias) {
-     const uint16_t addr = id * (MAX_ALIAS_SIZE +1);
-     for (uint8_t i=0; i<MAX_ALIAS_SIZE; i++) {
-    	 // here we save an uint8_t on an uint16_t
-    	 EE_WriteVariable(addr + i, (uint16_t)alias[i]);
-     }
+	// Check name integrity
+	if (((alias[0] > 'A') & (alias[0] < 'Z')) | ((alias[0] > 'a') & (alias[0] < 'z')) | (alias[0] == '\0')) {
+		const uint16_t addr = id * (MAX_ALIAS_SIZE +1);
+		for (uint8_t i=0; i<MAX_ALIAS_SIZE; i++) {
+			// here we save an uint8_t on an uint16_t
+			EE_WriteVariable(addr + i, (uint16_t)alias[i]);
+		}
+	}
 }
 
 char read_alias(unsigned short id, char* alias) {
