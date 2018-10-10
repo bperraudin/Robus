@@ -194,16 +194,17 @@ char read_alias(unsigned short id, char* alias) {
      const uint16_t addr = id * (MAX_ALIAS_SIZE +1);
      uint16_t data;
      EE_ReadVariable(addr, &data);
-
-     if ((char)data == '\0') {
-        return 0;
+     // Check name integrity
+     if (((((char)data < 'A') | ((char)data > 'Z'))
+             & (((char)data < 'a') | ((char)data > 'z')))
+             | ((char)data == '\0')) {
+         return 0;
      } else {
-    	 alias[0] = (char)data;
+         alias[0] = (char)data;
      }
      for (uint8_t i=1; i<MAX_ALIAS_SIZE; i++) {
-    	 EE_ReadVariable(addr + i, &data);
-    	 alias[i] = (char)data;
+        EE_ReadVariable(addr + i, &data);
+        alias[i] = (char)data;
      }
      return 1;
-	return 0;
 }
