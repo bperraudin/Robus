@@ -13,7 +13,7 @@
 #define PROTOCOL_REVISION 0
 #define BROADCAST_VAL 0x0FFF
 #ifndef MAX_VM_NUMBER
-    #define MAX_VM_NUMBER 5
+    #define MAX_VM_NUMBER 20
 #endif
 #ifndef MSG_BUFFER_SIZE
     #define MSG_BUFFER_SIZE 5
