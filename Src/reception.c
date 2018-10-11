@@ -286,16 +286,12 @@ char msg_complete() {
                 }
             break;
             case WRITE_ALIAS:
-            {
-                int i;
                 // Make a clean copy with full \0 at the end.
                 memset(CURRENTMODULE.alias, '\0', sizeof(CURRENTMODULE.alias));
                 if (CURRENTMSG.header.size > 16) CURRENTMSG.header.size = 16;
-                for (i = 0; i < CURRENTMSG.header.size; i++) {
-                    CURRENTMODULE.alias[i] = CURRENTMSG.data[i];
-                }
+                memcpy(CURRENTMODULE.alias, CURRENTMSG.data, CURRENTMSG.header.size);
                 write_alias(ctx.alloc_msg[ctx.current_buffer], CURRENTMODULE.alias);
-            break;}
+            break;
             case RESET_DETECTION:
                 reset_PTP(BRANCH_B);
                 reset_PTP(BRANCH_A);
