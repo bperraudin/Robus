@@ -296,6 +296,11 @@ char msg_complete() {
                 }
                 write_alias(ctx.alloc_msg[ctx.current_buffer], CURRENTMODULE.alias);
             break;}
+            case RESET_DETECTION:
+                reset_PTP(BRANCH_B);
+                reset_PTP(BRANCH_A);
+                reset_detection();
+            break;
             case GET_ID:
             // call something...
             case GET_MODULE_TYPE:

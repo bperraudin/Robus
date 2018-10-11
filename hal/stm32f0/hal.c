@@ -128,6 +128,7 @@ void hal_init(void) {
 	// Setup PTP lines
 	reset_PTP(BRANCH_A);
 	reset_PTP(BRANCH_B);
+	reset_detection();
 
 	// Unlock the Flash Program Erase controller
 	HAL_FLASH_Unlock();

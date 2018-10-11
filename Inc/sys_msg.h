@@ -10,6 +10,7 @@
 
 #include "context.h"
 
+unsigned char  reset_network_detection(vm_t* vm);
 unsigned char set_extern_id(vm_t* vm, target_mode_t target_mode, unsigned short target,
                            unsigned short newid);
 void send_ack(void);

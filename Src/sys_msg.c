@@ -20,6 +20,23 @@ void send_ack(void) {
     hal_transmit(&ack, 1);
 }
 
+unsigned char  reset_network_detection(vm_t* vm) {
+
+	reset_PTP(BRANCH_B);
+	reset_PTP(BRANCH_A);
+	reset_detection();
+	msg_t msg;
+
+	msg.header.target = BROADCAST_VAL;
+	msg.header.target_mode = BROADCAST;
+	msg.header.cmd = RESET_DETECTION;
+	msg.header.size = 0;
+
+    if (robus_send_sys(vm, &msg))
+        return 1;
+    return 0;
+}
+
 unsigned char set_extern_id(vm_t* vm, target_mode_t target_mode, unsigned short target,
                             unsigned short newid) {
     msg_t msg;
