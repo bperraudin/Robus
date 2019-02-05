@@ -241,6 +241,7 @@ void catch_ack(volatile unsigned char *data) {
  * \param *data byte received from serial
  */
 char msg_complete() {
+    unsigned int baudrate = 0;
     CURRENTMODULE.message_available++;
     if (CURRENTMSG.header.target_mode == ID ||
         CURRENTMSG.header.target_mode == IDACK ||
@@ -305,6 +306,10 @@ char msg_complete() {
             // call something...
             case GET_FIRM_REVISION:
             // call something...
+            break;
+            case SET_BAUDRATE:
+                memcpy(&baudrate, CURRENTMSG.data, CURRENTMSG.header.size);
+                set_baudrate(baudrate);
             break;
             default:
                 // set VM data

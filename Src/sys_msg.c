@@ -8,6 +8,7 @@
 #include <robus.h>
 #include "sys_msg.h"
 #include "hal.h"
+#include <string.h>
 
 /* Specific system mesages :
  * These messages don't follow generic rules of this protocol, there are
@@ -20,7 +21,7 @@ void send_ack(void) {
     hal_transmit(&ack, 1);
 }
 
-unsigned char  reset_network_detection(vm_t* vm) {
+unsigned char reset_network_detection(vm_t* vm) {
 
 	reset_PTP(BRANCH_B);
 	reset_PTP(BRANCH_A);
@@ -47,6 +48,20 @@ unsigned char set_extern_id(vm_t* vm, target_mode_t target_mode, unsigned short 
     msg.header.size = 2;
     msg.data[1] = newid;
     msg.data[0] = (newid <<8);
+
+    if (robus_send_sys(vm, &msg))
+        return 1;
+    return 0;
+}
+
+unsigned char set_network_baudrate(vm_t* vm, unsigned int baudrate) {
+    msg_t msg;
+
+    msg.header.target = BROADCAST_VAL;
+    msg.header.target_mode = BROADCAST;
+    msg.header.cmd = SET_BAUDRATE;
+    msg.header.size = sizeof(baudrate);
+    memcpy(msg.data, &baudrate, sizeof(baudrate));
 
     if (robus_send_sys(vm, &msg))
         return 1;

@@ -105,6 +105,20 @@ void reset_PTP(branch_t branch) {
 	HAL_Delay(factor);
 }*/
 
+void set_baudrate(unsigned int baudrate) {
+    LL_USART_Disable(USART1);
+    LL_USART_InitTypeDef USART_InitStruct;
+    USART_InitStruct.BaudRate = baudrate;
+    USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
+    USART_InitStruct.StopBits = LL_USART_STOPBITS_1;
+    USART_InitStruct.Parity = LL_USART_PARITY_NONE;
+    USART_InitStruct.TransferDirection = LL_USART_DIRECTION_TX_RX;
+    USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
+    USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_16;
+    LL_USART_Init(USART1, &USART_InitStruct);
+    LL_USART_Enable(USART1);
+}
+
 /**
  * \fn void hal_init(void)
  * \brief hardware configuration (clock, communication, DMA...)
@@ -119,6 +133,8 @@ void hal_init(void) {
 	LL_USART_EnableRxTimeout(USART1);
 	LL_USART_EnableIT_RTO(USART1);
 	LL_USART_SetRxTimeout(USART1, TIMEOUT_VAL * (8 + 1 + 1));
+    // Setup Robus baudrate
+    set_baudrate(DEFAULTBAUDRATE);
 	// Setup data direction
 	HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port,ROBUS_DE_Pin,GPIO_PIN_RESET); 	// Disable emitter | Enable Receiver only - Hardware DE impossible
 	// Setup pull ups pins

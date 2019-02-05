@@ -5,6 +5,7 @@
 #include "detection.h"
 
 void hal_init(void);
+void set_baudrate(unsigned int baudrate);
 
 unsigned char hal_transmit(unsigned char* data, unsigned short size);
 
