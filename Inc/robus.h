@@ -95,6 +95,7 @@ typedef struct __attribute__((__packed__)) vm_t{
     unsigned short id;       /*!< Module ID. */
     unsigned char type;     /*!< Module type. */
     char alias[MAX_ALIAS_SIZE];/*!< Module alias. */
+    char default_alias[MAX_ALIAS_SIZE]; /*!< Module default alias. */
 
     // Variables
     msg_t* msg_pt;          /*!< Message pointer. */

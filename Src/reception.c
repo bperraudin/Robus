@@ -287,8 +287,14 @@ char msg_complete(msg_t* msg) {
                 // Make a clean copy with full \0 at the end.
                 memset(CURRENTMODULE.alias, '\0', sizeof(CURRENTMODULE.alias));
                 if (msg->header.size > 16) msg->header.size = 16;
-                memcpy(CURRENTMODULE.alias, msg->data, msg->header.size);
-                write_alias(ctx.alloc_msg[ctx.current_buffer], CURRENTMODULE.alias);
+                if (msg->header.size == 0) {
+                    // This is an alias erase instruction, get back to default one
+                    write_alias(ctx.alloc_msg[ctx.current_buffer], '\0');
+                    memcpy(CURRENTMODULE.alias, CURRENTMODULE.default_alias, MAX_ALIAS_SIZE);
+                } else {
+                    memcpy(CURRENTMODULE.alias, msg->data, msg->header.size);
+                    write_alias(ctx.alloc_msg[ctx.current_buffer], CURRENTMODULE.alias);
+                }
             break;
             case RESET_DETECTION:
                 reset_PTP(BRANCH_B);

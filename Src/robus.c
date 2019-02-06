@@ -59,9 +59,15 @@ vm_t* robus_module_create(RX_CB rx_cb, unsigned char type, const char *alias) {
     ctx.vm_table[ctx.vm_number].type = type;
     // Initialise the module id, TODO the ID could be stored in EEprom, the default ID could be set in factory...
     ctx.vm_table[ctx.vm_number].id = DEFAULTID;
+    // Save default alias
+    for (i=0; i < MAX_ALIAS_SIZE-1; i++) {
+        ctx.vm_table[ctx.vm_number].default_alias[i] = alias[i];
+        if (ctx.vm_table[ctx.vm_number].default_alias[i] == '\0')
+            break;
+    }
+    ctx.vm_table[ctx.vm_number].default_alias[i] = '\0';
     // Initialise the module alias to 0
     memset((void *)ctx.vm_table[ctx.vm_number].alias, 0, sizeof(ctx.vm_table[ctx.vm_number].alias));
-
     if (!read_alias(ctx.vm_number, (char *)ctx.vm_table[ctx.vm_number].alias)) {
         // if no alias saved keep the default one
         for (i=0; i < MAX_ALIAS_SIZE-1; i++) {
