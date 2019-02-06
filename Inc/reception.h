@@ -22,6 +22,7 @@ void catch_ack(volatile unsigned char *data);
 
 void flush (void);
 void timeout (void);
+unsigned char module_concerned(header_t* header);
 
 
 #endif /* _RECEPTION_H_ */

@@ -26,6 +26,71 @@ unsigned char concernedmodules[MAX_VM_NUMBER] = {FALSE};
 unsigned short data_count = 0;
 // static timeout_t timeout; //TODO timeout management
 
+unsigned char module_concerned(header_t* header) {
+    unsigned char concerned = FALSE;
+    // Find if we are concerned by this message.
+    switch (header->target_mode) {
+        case ID:
+        case IDACK:
+            // Default id
+            if(header->target == ctx.id) {
+                concerned = TRUE;
+                ctx.alloc_msg[ctx.current_buffer] = 0;
+                ctx.data_cb = get_data;
+                break;
+            }
+            // Check all VM id
+            for (int i = 0; i < ctx.vm_number; i++) {
+                concerned = (header->target == ctx.vm_table[i].id);
+                if (concerned) {
+                    ctx.alloc_msg[ctx.current_buffer] = i;
+                    ctx.data_cb = get_data;
+                    break;
+                }
+            }
+        break;
+        case TYPE:
+            //check default type
+            if(header->target == ctx.type) {
+                concerned = TRUE;
+                concernedmodules[0] = TRUE;
+                ctx.data_cb = get_data;
+                break;
+            }
+            // Check all VM type
+            for (int i = 0; i < ctx.vm_number; i++) {
+                if (header->target == ctx.vm_table[i].type) {
+                    concerned = TRUE;
+                    concernedmodules[i] = TRUE;
+                    ctx.data_cb = get_data;
+                }
+            }
+        break;
+        case BROADCAST:
+            concerned = (header->target == BROADCAST_VAL);
+            ctx.data_cb = get_data;
+            if (concerned) {
+                for (int i = 0; i < ctx.vm_number; i++) {
+                    concernedmodules[i] = TRUE;
+                }
+            }
+        break;
+        case MULTICAST:
+            for (int i = 0; i < ctx.vm_number; i++) {
+                if (multicast_target_bank(&ctx.vm_table[i], header->target)) { //TODO manage multiple slave concerned
+                    concerned = TRUE;
+                    concernedmodules[i] = TRUE;
+                }
+            }
+            ctx.data_cb = get_data;
+        break;
+        default:
+            return concerned;
+        break;
+    }
+    return concerned;
+}
+
 /**
  * \fn unsigned char crc(unsigned char* data, unsigned char size)
  * \brief generate a CRC
@@ -101,66 +166,7 @@ void get_header(volatile unsigned char *data) {
         // Reset the msg allocation
         ctx.alloc_msg[ctx.current_buffer] = 0;
 
-        // Find if we are concerned by this message.
-        switch (CURRENTMSG.header.target_mode) {
-            case ID:
-            case IDACK:
-                // Default id
-                if(CURRENTMSG.header.target == ctx.id) {
-                    keep = TRUE;
-                    ctx.alloc_msg[ctx.current_buffer] = 0;
-                    ctx.data_cb = get_data;
-                    break;
-                }
-                // Check all VM id
-                for (int i = 0; i < ctx.vm_number; i++) {
-                    keep = (CURRENTMSG.header.target == ctx.vm_table[i].id);
-                    if (keep) {
-                        ctx.alloc_msg[ctx.current_buffer] = i;
-                        ctx.data_cb = get_data;
-                        break;
-                    }
-                }
-            break;
-            case TYPE:
-                //check default type
-                if(CURRENTMSG.header.target == ctx.type) {
-                    keep = TRUE;
-                    concernedmodules[0] = TRUE;
-                    ctx.data_cb = get_data;
-                    break;
-                }
-                // Check all VM type
-                for (int i = 0; i < ctx.vm_number; i++) {
-                    if (CURRENTMSG.header.target == ctx.vm_table[i].type) {
-                        keep = TRUE;
-                        concernedmodules[i] = TRUE;
-                        ctx.data_cb = get_data;
-                    }
-                }
-            break;
-            case BROADCAST:
-                keep = (CURRENTMSG.header.target == BROADCAST_VAL);
-                ctx.data_cb = get_data;
-                if (keep) {
-                    for (int i = 0; i < ctx.vm_number; i++) {
-                        concernedmodules[i] = TRUE;
-                    }
-                }
-            break;
-            case MULTICAST:
-                for (int i = 0; i < ctx.vm_number; i++) {
-                    if (multicast_target_bank(&ctx.vm_table[i], CURRENTMSG.header.target)) { //TODO manage multiple slave concerned
-                        keep = TRUE;
-                        concernedmodules[i] = TRUE;
-                    }
-                }
-                ctx.data_cb = get_data;
-            break;
-            default:
-                return;
-            break;
-        }
+        keep = module_concerned(&CURRENTMSG.header);
     }
 }
 
@@ -171,15 +177,6 @@ void get_header(volatile unsigned char *data) {
  * \param *data byte received from serial
  */
 void get_data(volatile unsigned char *data) {
-
-/*  if (timeout_ended(&timeout)){  //TODO timeout management
-        data_count = 0;
-        keep = FALSE;
-        ctx.data_cb = get_header;
-        return;
-    }
-    timeout_init(&timeout, 20);*/
-
     CURRENTMSG.data[data_count] = *data;
 
     if (data_count > CURRENTMSG.header.size) {
