@@ -112,10 +112,11 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
         ctx.data_cb = catch_ack;
         // Clear the ack value
         vm->msg_pt->ack = 0;
-        // TODO
-        // We could use the waituntil from the Xevel lib
-        // In the same time if we don't have to do anything else we just can wait here...
         while (!vm->msg_pt->ack);
+    }
+    // localhost management
+    if (module_concerned(&msg->header)) {
+        msg_complete(msg);
     }
     return 0;
 }
