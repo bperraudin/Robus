@@ -190,17 +190,17 @@ void get_data(volatile unsigned char *data) {
                 ctx.data_cb = get_header;
                 //TODO a loop if not ID/IDACK
                 if (CURRENTMSG.header.target_mode == ID || CURRENTMSG.header.target_mode == IDACK) {
-                    msg_complete();
+                    msg_complete(&CURRENTMSG);
                 }
                 else {
                     if(ctx.vm_number == 0) {
                         // no module created, but save this ID in the void module.
-                        msg_complete();
+                        msg_complete(&CURRENTMSG);
                     }
                     for (int i = 0; i < ctx.vm_number; i++) {
                         if (concernedmodules[i]) {
                             ctx.alloc_msg[ctx.current_buffer] = i;
-                            if (msg_complete())break;
+                            if (msg_complete(&CURRENTMSG))break;
                             concernedmodules[i] = FALSE;
                         }
                     }
@@ -237,24 +237,24 @@ void catch_ack(volatile unsigned char *data) {
  *
  * \param *data byte received from serial
  */
-char msg_complete() {
+char msg_complete(msg_t* msg) {
     unsigned int baudrate = 0;
     CURRENTMODULE.message_available++;
-    if (CURRENTMSG.header.target_mode == ID ||
-        CURRENTMSG.header.target_mode == IDACK ||
-        CURRENTMSG.header.target_mode == TYPE ||
-        CURRENTMSG.header.target_mode == BROADCAST) {
-        switch (CURRENTMSG.header.cmd) {
+    if (msg->header.target_mode == ID ||
+        msg->header.target_mode == IDACK ||
+        msg->header.target_mode == TYPE ||
+        msg->header.target_mode == BROADCAST) {
+        switch (msg->header.cmd) {
             case WRITE_ID:
                 // Get and save a new given ID
-                if ((CURRENTMSG.header.target_mode == BROADCAST) &
+                if ((msg->header.target_mode == BROADCAST) &
                     (ctx.detection.keepline != NO_BRANCH) &
                     (!ctx.detection.detection_end)) {
                     // We are on topology detection mode, and this is our turn
                     // Save id for the next module we have on this board
                     ctx.vm_table[ctx.detection.detected_vm++].id =
-                        (((unsigned short)CURRENTMSG.data[1]) |
-                        ((unsigned short)CURRENTMSG.data[0] << 8));
+                        (((unsigned short)msg->data[1]) |
+                        ((unsigned short)msg->data[0] << 8));
 
                     // Check if that was the last virtual module
                     if (ctx.detection.detected_vm >= ctx.vm_number) {
@@ -278,16 +278,16 @@ char msg_complete() {
                     }
                     return 1;
                 }
-                else if (CURRENTMSG.header.target_mode != BROADCAST) {
-                    CURRENTMODULE.id = (((unsigned short)CURRENTMSG.data[1]) |
-                                       ((unsigned short)CURRENTMSG.data[0] << 8));
+                else if (msg->header.target_mode != BROADCAST) {
+                    CURRENTMODULE.id = (((unsigned short)msg->data[1]) |
+                                       ((unsigned short)msg->data[0] << 8));
                 }
             break;
             case WRITE_ALIAS:
                 // Make a clean copy with full \0 at the end.
                 memset(CURRENTMODULE.alias, '\0', sizeof(CURRENTMODULE.alias));
-                if (CURRENTMSG.header.size > 16) CURRENTMSG.header.size = 16;
-                memcpy(CURRENTMODULE.alias, CURRENTMSG.data, CURRENTMSG.header.size);
+                if (msg->header.size > 16) msg->header.size = 16;
+                memcpy(CURRENTMODULE.alias, msg->data, msg->header.size);
                 write_alias(ctx.alloc_msg[ctx.current_buffer], CURRENTMODULE.alias);
             break;
             case RESET_DETECTION:
@@ -305,13 +305,13 @@ char msg_complete() {
             // call something...
             break;
             case SET_BAUDRATE:
-                memcpy(&baudrate, CURRENTMSG.data, CURRENTMSG.header.size);
+                memcpy(&baudrate, msg->data, msg->header.size);
                 set_baudrate(baudrate);
             break;
             default:
                 // set VM data
-                CURRENTMODULE.msg_pt = &CURRENTMSG;
-                CURRENTMSG.header.cmd -= PROTOCOL_CMD_NB;
+                CURRENTMODULE.msg_pt = msg;
+                msg->header.cmd -= PROTOCOL_CMD_NB;
 
                 // Call CM callback
                 if (CURRENTMODULE.rx_cb != 0) {
@@ -319,23 +319,23 @@ char msg_complete() {
                     CURRENTMODULE.message_available--;
                 }
                 else {
-                    CURRENTMODULE.data_to_read = CURRENTMSG.header.size;
+                    CURRENTMODULE.data_to_read = msg->header.size;
                 }
             break;
         }
    } else {
         // set VM data
-        CURRENTMODULE.msg_pt = &CURRENTMSG;
+        CURRENTMODULE.msg_pt = msg;
 
         // Call CM callback
         if (CURRENTMODULE.rx_cb != 0) {
-            CURRENTMSG.header.cmd -= PROTOCOL_CMD_NB;
+            msg->header.cmd -= PROTOCOL_CMD_NB;
             CURRENTMODULE.rx_cb(&CURRENTMODULE, CURRENTMODULE.msg_pt);
-            CURRENTMSG.header.cmd += PROTOCOL_CMD_NB;
+            msg->header.cmd += PROTOCOL_CMD_NB;
             CURRENTMODULE.message_available--;
         }
         else {
-            CURRENTMODULE.data_to_read = CURRENTMSG.header.size;
+            CURRENTMODULE.data_to_read = msg->header.size;
         }
     }
     return 0;

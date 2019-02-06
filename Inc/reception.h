@@ -15,13 +15,13 @@ unsigned short crc(unsigned char* data, unsigned short size);
 // Callbacks reception
 void get_header(volatile unsigned char *data);
 void get_data(volatile unsigned char *data);
-char msg_complete(void);
 
 // Callbacks send
 void catch_ack(volatile unsigned char *data);
 
 void flush (void);
 void timeout (void);
+char msg_complete(msg_t* msg);
 unsigned char module_concerned(header_t* header);
 
 
