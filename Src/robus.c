@@ -46,6 +46,13 @@ void robus_init(void) {
     hal_init();
 }
 
+void robus_modules_clear(void) {
+    // Clear vm table
+    memset(ctx.vm_table, 0, sizeof(vm_t) * MAX_VM_NUMBER);
+    // Reset the number of created modules
+    ctx.vm_number = 0;
+}
+
 vm_t* robus_module_create(RX_CB rx_cb, unsigned char type, const char *alias) {
     unsigned char i = 0;
 

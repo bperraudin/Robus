@@ -115,6 +115,13 @@ typedef void (*RX_CB) (vm_t* vm, msg_t *msg);
 void robus_init(void);
 
 /**
+ * \fn void robus_modules_clear(void)
+ * \brief Completely reset the list of virtual modules.
+ *
+ */
+void robus_modules_clear(void);
+
+/**
  * \fn vm_t* robus_module_create(RX_CB rx_cb, unsigned char type, unsigned char *alias)
  * \brief Initialisation of the Robus communication lib.
  *
