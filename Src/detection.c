@@ -75,7 +75,6 @@ unsigned char poke(branch_t branch) {
 unsigned char topology_detection(vm_t* vm) {
     unsigned short newid = 1;
     ctx.detection_mode = MASTER_DETECT;
-
     // Reset all detection state of modules on the network
     reset_network_detection(vm);
     // wait a bit
@@ -97,6 +96,7 @@ unsigned char topology_detection(vm_t* vm) {
             for (volatile unsigned int i = 0; i < (TIMERVAL * 2); i++);
         }
     }
+    ctx.detection_mode = MASTER_DETECT;
     if (poke(BRANCH_B)) {
         // Someone reply to our poke!
         // loop while PTP_B is released

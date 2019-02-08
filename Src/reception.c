@@ -249,6 +249,7 @@ char msg_complete(msg_t* msg) {
                 // Get and save a new given ID
                 if ((msg->header.target_mode == BROADCAST) &
                     (ctx.detection.keepline != NO_BRANCH) &
+                    (ctx.detection_mode != MASTER_DETECT) &
                     (!ctx.detection.detection_end)) {
                     // We are on topology detection mode, and this is our turn
                     // Save id for the next module we have on this board
