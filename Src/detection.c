@@ -74,9 +74,9 @@ unsigned char poke(branch_t branch) {
  */
 unsigned char topology_detection(vm_t* vm) {
     unsigned short newid = 1;
-    ctx.detection_mode = MASTER_DETECT;
     // Reset all detection state of modules on the network
     reset_network_detection(vm);
+    ctx.detection_mode = MASTER_DETECT;
     // wait a bit
     for (volatile unsigned int i = 0; i < TIMERVAL; i++);
 
