@@ -8,7 +8,7 @@
 #include "sys_msg.h"
 #include "hal.h"
 
-#define TIMERVAL 1000
+#define TIMERVAL 500
 
 /**
  * \fn ptp_handler(branch_t branch)
@@ -54,6 +54,7 @@ unsigned char poke(branch_t branch) {
     for (volatile unsigned int i = 0; i < TIMERVAL; i++);
     // release the ptp line
     reset_PTP(branch);
+    for (volatile unsigned int i = 0; i < TIMERVAL; i++);
     // read the line state
     if (get_PTP(branch)) {
         // Someone reply, reverse the detection to wake up on line release
