@@ -92,18 +92,26 @@ unsigned char topology_detection(vm_t* vm) {
     if (poke(BRANCH_A)) {
         // Someone reply to our poke!
         // loop while PTP_A is released
+        int module_number = 0;
         while (ctx.detection.keepline != NO_BRANCH) {
+            if (module_number++ > 500) {
+                break;
+            }
             set_extern_id(vm, BROADCAST, BROADCAST_VAL, newid++);
-            for (volatile unsigned int i = 0; i < (TIMERVAL * 2); i++);
+            for (volatile unsigned int i = 0; i < (TIMERVAL * 3); i++);
         }
     }
     ctx.detection_mode = MASTER_DETECT;
     if (poke(BRANCH_B)) {
         // Someone reply to our poke!
         // loop while PTP_B is released
+        int module_number = 0;
         while (ctx.detection.keepline != NO_BRANCH) {
+            if (module_number++ > 500) {
+                break;
+            }
             set_extern_id(vm, BROADCAST, BROADCAST_VAL, newid++);
-            for (volatile unsigned int i = 0; i < (TIMERVAL * 2); i++);
+            for (volatile unsigned int i = 0; i < (TIMERVAL * 3); i++);
         }
     }
 
