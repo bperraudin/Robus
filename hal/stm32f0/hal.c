@@ -184,6 +184,10 @@ unsigned char hal_transmit(unsigned char* data, unsigned short size) {
     return 0;
 }
 
+void hal_wait_transmit_end(void) {
+    while(!LL_USART_IsActiveFlag_TC(USART1));
+}
+
 unsigned char get_PTP(branch_t branch) {
 
 	if (branch == BRANCH_A) {
@@ -195,6 +199,66 @@ unsigned char get_PTP(branch_t branch) {
 	return 0;
 }
 
+/**
+ * \fn void hal_disable_irq(void)
+ * \brief disable IRQ
+ *
+ * \return error
+ */
+void hal_disable_irq(void) {
+    __disable_irq();
+}
+
+/**
+ * \fn void hal_enable_irq(void)
+ * \brief enable IRQ
+ *
+ * \return error
+ */
+void hal_enable_irq(void) {
+    __enable_irq();
+}
+
+
+/**
+ * \fn void hal_enable_rx(void)
+ * \brief enable RX hard channel
+ *
+ * \return error
+ */
+void hal_enable_rx(void) {
+    HAL_GPIO_WritePin(ROBUS_RE_GPIO_Port,ROBUS_RE_Pin,GPIO_PIN_RESET);
+}
+
+/**
+ * \fn void hal_disable_rx(void)
+ * \brief disable RX hard channel
+ *
+ * \return error
+ */
+void hal_disable_rx(void) {
+    HAL_GPIO_WritePin(ROBUS_RE_GPIO_Port,ROBUS_RE_Pin,GPIO_PIN_SET);
+}
+
+/**
+ * \fn void hal_enable_tx(void)
+ * \brief enable TX hard channel
+ *
+ * \return error
+ */
+void hal_enable_tx(void) {
+    HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port,ROBUS_DE_Pin,GPIO_PIN_SET);
+}
+
+/**
+ * \fn void hal_disable_tx(void)
+ * \brief disable TX hard channel
+ *
+ * \return error
+ */
+void hal_disable_tx(void) {
+    HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port,ROBUS_DE_Pin,GPIO_PIN_RESET);
+}
 // ******** Alias management ****************
 void write_alias(unsigned short id, char* alias) {
     const uint16_t addr = id * (MAX_ALIAS_SIZE +1);

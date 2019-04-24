@@ -11,6 +11,13 @@ unsigned char hal_transmit(unsigned char* data, unsigned short size);
 
 void send_poke(branch_t branch);
 void hal_delay_ms(int factor);
+void hal_disable_irq(void);
+void hal_enable_irq(void);
+void hal_disable_tx(void);
+void hal_disable_rx(void);
+void hal_enable_tx(void);
+void hal_enable_rx(void);
+void hal_wait_transmit_end(void);
 
 void set_PTP(branch_t branch);
 void reset_PTP(branch_t branch);
