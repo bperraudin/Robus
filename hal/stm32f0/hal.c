@@ -165,22 +165,14 @@ void hal_init(void) {
  * \return error
  */
 unsigned char hal_transmit(unsigned char* data, unsigned short size) {
-    // Disable RX and enable TX
-	HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port,ROBUS_DE_Pin,GPIO_PIN_SET);	// Enable TX
-	HAL_GPIO_WritePin(ROBUS_RE_GPIO_Port,ROBUS_RE_Pin,GPIO_PIN_SET); 	// Disable RX
-
-	for (unsigned short i = 0; i < size; i++) {
-		while (!LL_USART_IsActiveFlag_TXE(USART1));
-		LL_USART_TransmitData8(USART1,*(data+i));
-	}
-	while(!LL_USART_IsActiveFlag_TC(USART1));
-
-	// Force start Usart Timeout
-	timeout();
-
-    // disable TX and enable RX
-	HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port,ROBUS_DE_Pin,GPIO_PIN_RESET);	// Disable TX
-	HAL_GPIO_WritePin(ROBUS_RE_GPIO_Port,ROBUS_RE_Pin,GPIO_PIN_RESET); 	// Enable RX
+    for (unsigned short i = 0; i < size; i++) {
+        while (!LL_USART_IsActiveFlag_TXE(USART1));
+        if (ctx.collision) {
+            // There is a collision
+            return 1;
+        }
+        LL_USART_TransmitData8(USART1,*(data+i));
+    }
     return 0;
 }
 

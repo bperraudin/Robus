@@ -16,6 +16,8 @@
 // Creation of the robus context. This variable is used in all files of this lib.
 volatile context_t ctx;
 
+unsigned char transmit(unsigned char* data, unsigned short size);
+
 // Startup and network configuration
 void robus_init(void) {
     // Init the number of created  virtual module.
@@ -111,14 +113,18 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
     // Write the CRC into the message.
     msg->data[msg->header.size] = (unsigned char)crc_val;
     msg->data[msg->header.size + 1] = (unsigned char)(crc_val >> 8);
-    // wait tx unlock
-    while(ctx.tx_lock) {
-    }
-    // re-lock the transmission
-    ctx.tx_lock = TRUE;
     // Send message
-    if (hal_transmit(msg->stream, full_size))
-        return 1;
+    while (transmit(msg->stream, full_size)) {
+        // There is a collision
+        hal_disable_irq();
+        // switch reception in header mode
+        ctx.data_cb = get_header;
+        hal_enable_irq();
+        // wait timeout of collided packet
+        while(ctx.tx_lock);
+        // timer proportional to ID
+        for (volatile unsigned int tempo = 0; tempo < (COLLISION_TIMER * (vm->id -1)); tempo++);
+    }
     // Check if ACK needed
     if (msg->header.target_mode == IDACK) {
         // ACK needed, change the state of state machine for wait a ACK
@@ -167,4 +173,39 @@ void save_alias(vm_t* vm, char* alias) {
         if (vm == &ctx.vm_table[i]) break;
     }
     write_alias(i, alias);
+}
+
+unsigned char transmit(unsigned char* data, unsigned short size) {
+    unsigned short i = 0;
+    const int col_check_data_num = 5;
+    // wait tx unlock
+    while(ctx.tx_lock);
+    hal_disable_irq();
+    // re-lock the transmission
+    ctx.tx_lock = TRUE;
+    // switch reception in collision detection mode
+    ctx.data_cb = get_collision;
+    ctx.tx_data = data;
+    ctx.collision = FALSE;
+    hal_enable_irq();
+    // Enable TX
+    hal_enable_tx();
+    // Try to detect a collision during the 4 first octets
+    if (hal_transmit(data, col_check_data_num)) {
+        hal_disable_tx();
+        return 1;
+    }
+    // No collision occure, stop collision detection mode and continue to transmit
+    hal_disable_irq();
+    ctx.data_cb = get_header;
+    hal_enable_irq();
+    hal_disable_rx();
+    hal_transmit(data + col_check_data_num, size-col_check_data_num);
+    hal_wait_transmit_end();
+    // Force Usart Timeout
+    timeout();
+    // disable TX and Enable RX
+    hal_disable_tx();
+    hal_enable_rx();
+    return 0;
 }

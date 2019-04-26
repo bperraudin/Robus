@@ -31,7 +31,9 @@ typedef struct __attribute__((__packed__)){
     status_t status;    /*!< Status. */
     unsigned short id;       /*!< Module ID. */
     unsigned char type;     /*!< Module type. */
-    unsigned char tx_lock;  /*!< transmission locking management. */
+    volatile unsigned char tx_lock;  /*!< transmission locking management. */
+    volatile unsigned char* tx_data;  /*!< sent data pointer. */
+    volatile unsigned char collision; /*!< collision flag. */
 
     detection_mode_t detection_mode;
     detection_t detection;

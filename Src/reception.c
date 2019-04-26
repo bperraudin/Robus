@@ -218,6 +218,21 @@ void get_data(volatile unsigned char *data) {
     data_count++;
 }
 
+/**
+ * \fn void get_collision(volatile unsigned char *data)
+ * \brief catch bus collision.
+ *
+ * \param *data byte received from serial
+ */
+void get_collision(volatile unsigned char *data){
+    if (*ctx.tx_data != *data) {
+        //data dont match, there is a collision
+        ctx.collision = TRUE;
+        // send this data to header manager. This data should be good
+        get_header(data);
+    }
+    ctx.tx_data = ctx.tx_data +1;
+}
 
 /**
  * \fn void catch_ack(volatile unsigned char *data)
