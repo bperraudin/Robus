@@ -98,7 +98,7 @@ unsigned char topology_detection(vm_t* vm) {
                 break;
             }
             set_extern_id(vm, BROADCAST, BROADCAST_VAL, newid++);
-            for (volatile unsigned int i = 0; i < (TIMERVAL * 3); i++);
+            for (volatile unsigned int i = 0; i < (TIMERVAL * 4); i++);
         }
     }
     ctx.detection_mode = MASTER_DETECT;
@@ -111,7 +111,7 @@ unsigned char topology_detection(vm_t* vm) {
                 break;
             }
             set_extern_id(vm, BROADCAST, BROADCAST_VAL, newid++);
-            for (volatile unsigned int i = 0; i < (TIMERVAL * 3); i++);
+            for (volatile unsigned int i = 0; i < (TIMERVAL * 4); i++);
         }
     }
 
