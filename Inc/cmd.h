@@ -22,6 +22,7 @@ typedef enum {
     GET_COM_REVISION,    /*!< Reply with the actual communication protocole version (1 default). */
     RESET_DETECTION,     /*!< Reset detection*/
     SET_BAUDRATE,        /*!< Set Robus baudrate*/
+    DEAD_MODULE,         /*!< This module is dead*/
     PROTOCOL_CMD_NB = 30 /*!< WARNING: do not exceed this value. This is the minimum cmd value available for applicative side. */
 }cmd_t;
 

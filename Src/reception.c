@@ -30,8 +30,9 @@ unsigned char module_concerned(header_t* header) {
     unsigned char concerned = FALSE;
     // Find if we are concerned by this message.
     switch (header->target_mode) {
-        case ID:
         case IDACK:
+            ctx.status.rx_error = FALSE;
+        case ID:
             // Default id
             if(header->target == ctx.id) {
                 concerned = TRUE;
@@ -121,6 +122,9 @@ unsigned short crc(unsigned char* data, unsigned short size) {
  * \return
  */
 void timeout (void) {
+    if (ctx.data_cb != get_header){
+        ctx.status.rx_timeout = TRUE;
+    }
     ctx.tx_lock = FALSE;
     flush();
 }
@@ -209,8 +213,12 @@ void get_data(volatile unsigned char *data) {
                 if (ctx.current_buffer == MSG_BUFFER_SIZE) {
                     ctx.current_buffer = 0;
                 }
-            } else
+            } else {
                 ctx.status.rx_error = TRUE;
+                if (CURRENTMSG.header.target_mode == IDACK) {
+                    send_ack();
+                }
+            }
         }
         flush ();
         return;
@@ -241,9 +249,13 @@ void get_collision(volatile unsigned char *data){
  * \param *data byte received from serial
  */
 void catch_ack(volatile unsigned char *data) {
+    // set VM msg
+    ctx.vm_last_send->msg_pt = &CURRENTMSG;
     // Check ACK value.
     CURRENTMSG.ack = *data;
-    // Set something (the Xevel thread thing??)...
+    // notify ACK reception
+    ctx.ack = TRUE;
+    ctx.data_cb = get_header;
 }
 
 /**

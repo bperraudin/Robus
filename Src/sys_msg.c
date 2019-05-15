@@ -17,8 +17,13 @@
  */
 
 void send_ack(void) {
-    unsigned char ack = TRUE;
-    hal_transmit(&ack, 1);
+    hal_enable_tx();
+    hal_disable_rx();
+    hal_transmit(&ctx.status.unmap, 1);
+    hal_wait_transmit_end();
+    hal_enable_rx();
+    hal_disable_tx();
+    ctx.status.unmap = 0x0F;
 }
 
 unsigned char reset_network_detection(vm_t* vm) {

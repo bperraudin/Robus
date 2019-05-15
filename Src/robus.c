@@ -40,10 +40,9 @@ void robus_init(void) {
     }
     // Initialize the start case of the message buffer
     ctx.current_buffer = 0;
-    // Initialize the robus modul status
-    ctx.status = (status_t) {.rx_error = FALSE,
-                             .unexpected_state = FALSE,
-                             .warning = FALSE};
+    // Initialize the robus module status
+    ctx.status.unmap = 0;
+    ctx.status.identifier = 0xF;
   // Init hal
     hal_init();
 }
@@ -94,6 +93,8 @@ vm_t* robus_module_create(RX_CB rx_cb, unsigned char type, const char *alias) {
     for (i=0; i < MSG_BUFFER_SIZE; i++) {
         ctx.alloc_msg[i] = 0;
     }
+    // Initialize dead module detection
+    ctx.vm_table[ctx.vm_number].dead_module_spotted = 0;
     // Return the freshly initialized vm pointer.
     return &ctx.vm_table[ctx.vm_number++];
 }
@@ -103,6 +104,7 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
     // Compute the full message size based on the header size info.
     unsigned short full_size = sizeof(header_t) + msg->header.size;
     unsigned short crc_val = 0;
+    unsigned char nbr_nak_retry = 0;
     // Set protocol revision and source ID on the message
     msg->header.protocol = PROTOCOL_REVISION;
     msg->header.source = vm->id;
@@ -113,6 +115,12 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
     // Write the CRC into the message.
     msg->data[msg->header.size] = (unsigned char)crc_val;
     msg->data[msg->header.size + 1] = (unsigned char)(crc_val >> 8);
+    ctx.vm_last_send = vm;
+    ack_restart :
+    nbr_nak_retry++;
+    hal_disable_irq();
+    ctx.ack = FALSE;
+    hal_enable_irq();
     // Send message
     while (transmit(msg->stream, full_size)) {
         // There is a collision
@@ -127,11 +135,36 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
     }
     // Check if ACK needed
     if (msg->header.target_mode == IDACK) {
-        // ACK needed, change the state of state machine for wait a ACK
-        ctx.data_cb = catch_ack;
-        // Clear the ack value
-        vm->msg_pt->ack = 0;
-        while (!vm->msg_pt->ack);
+        // Check if it is a localhost message
+        if (module_concerned(&msg->header)) {
+            send_ack();
+            ctx.ack = 0;
+        } else {
+            // ACK needed, change the state of state machine for wait a ACK
+            ctx.data_cb = catch_ack;
+            volatile int time_out = 0;
+            while (!ctx.ack & (time_out < 60)){
+                time_out++;
+            }
+            status_t status;
+            status.unmap = vm->msg_pt->ack;
+            if (!ctx.ack | status.rx_error | (status.identifier != 0xF)) {
+                if (ctx.ack && status.identifier != 0xF) {
+                    // This is probably a part of another message
+                    // Send it to header
+                    ctx.data_cb = get_header;
+                    get_header(&vm->msg_pt->ack);
+                }
+                if (nbr_nak_retry < 10) {
+                    timeout();
+                    goto ack_restart;
+                } else {
+                    // Set the dead module ID into the VM
+                    vm->dead_module_spotted = msg->header.target;
+                }
+            }
+            ctx.ack = 0;
+        }
     }
     // localhost management
     if (module_concerned(&msg->header)) {

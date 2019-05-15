@@ -19,9 +19,14 @@
 typedef void (*DATA_CB) (volatile unsigned char *data);
 
 typedef struct __attribute__((__packed__)){
-    unsigned char rx_error : 1;
-    unsigned char unexpected_state : 1;
-    unsigned char warning : 1;
+    union {
+        struct __attribute__((__packed__)){
+            unsigned char identifier : 4;
+            unsigned char rx_error : 1;
+            unsigned char rx_timeout : 1;
+        };
+        unsigned char unmap;                /*!< Uncmaped form. */
+    };
 } status_t;
 
 typedef struct __attribute__((__packed__)){
@@ -31,9 +36,10 @@ typedef struct __attribute__((__packed__)){
     status_t status;    /*!< Status. */
     unsigned short id;       /*!< Module ID. */
     unsigned char type;     /*!< Module type. */
-    volatile unsigned char tx_lock;  /*!< transmission locking management. */
     volatile unsigned char* tx_data;  /*!< sent data pointer. */
+    volatile unsigned char tx_lock; /*!< transmission locking management. */
     volatile unsigned char collision; /*!< collision flag. */
+    volatile unsigned char ack; /*!< acknoledge flag. */
 
     detection_mode_t detection_mode;
     detection_t detection;
@@ -41,6 +47,7 @@ typedef struct __attribute__((__packed__)){
     //Virtual module management
     vm_t vm_table[MAX_VM_NUMBER];       /*!< Virtual Module table. */
     unsigned char vm_number; /*!< Virtual Module number. */
+    vm_t* vm_last_send; /*!< Last Virtual Module id who send something. */
 
     //msg allocation management
     msg_t msg[MSG_BUFFER_SIZE];          /*!< Message table (one for each virtual module). */
