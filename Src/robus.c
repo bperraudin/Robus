@@ -219,7 +219,6 @@ unsigned char transmit(unsigned char* data, unsigned short size) {
     // switch reception in collision detection mode
     ctx.data_cb = get_collision;
     ctx.tx_data = data;
-    ctx.collision = FALSE;
     hal_enable_irq();
     // Enable TX
     hal_enable_tx();

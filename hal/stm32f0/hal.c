@@ -163,10 +163,13 @@ void hal_init(void) {
  * \return error
  */
 unsigned char hal_transmit(unsigned char* data, unsigned short size) {
+    ctx.collision = FALSE;
     for (unsigned short i = 0; i < size; i++) {
-        while (!LL_USART_IsActiveFlag_TXE(USART1));
+        while (!LL_USART_IsActiveFlag_TXE(USART1)){
+        }
         if (ctx.collision) {
             // There is a collision
+            ctx.collision = FALSE;
             return 1;
         }
         LL_USART_TransmitData8(USART1,*(data+i));
