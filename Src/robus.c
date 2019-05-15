@@ -237,7 +237,7 @@ unsigned char transmit(unsigned char* data, unsigned short size) {
     // Force Usart Timeout
     timeout();
     // disable TX and Enable RX
-    hal_disable_tx();
     hal_enable_rx();
+    hal_disable_tx();
     return 0;
 }
