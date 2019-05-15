@@ -9,8 +9,6 @@
 #include "eeprom.h"
 #include <stdio.h>
 
-#define TIMEOUT_VAL 1
-
 uint16_t VirtAddVarTab[NB_OF_VAR] = { 0 };
 
 /**

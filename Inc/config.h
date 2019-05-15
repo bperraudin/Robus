@@ -14,6 +14,7 @@
 #define BROADCAST_VAL 0x0FFF
 #define DEFAULTBAUDRATE 1000000
 #define COLLISION_TIMER 70
+#define TIMEOUT_VAL 2
 #ifndef MAX_VM_NUMBER
     #define MAX_VM_NUMBER 20
 #endif
