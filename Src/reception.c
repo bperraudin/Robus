@@ -192,7 +192,6 @@ void get_data(volatile unsigned char *data) {
                     send_ack();
                 }
                 ctx.data_cb = get_header;
-                //TODO a loop if not ID/IDACK
                 if (CURRENTMSG.header.target_mode == ID || CURRENTMSG.header.target_mode == IDACK) {
                     msg_complete(&CURRENTMSG);
                 }
@@ -250,7 +249,7 @@ void get_collision(volatile unsigned char *data){
  */
 void catch_ack(volatile unsigned char *data) {
     // set VM msg
-    ctx.vm_last_send->msg_pt = &CURRENTMSG;
+    ctx.vm_last_send->msg_pt = (msg_t*)&CURRENTMSG;
     // Check ACK value.
     CURRENTMSG.ack = *data;
     // notify ACK reception

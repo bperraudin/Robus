@@ -148,7 +148,7 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
             }
             status_t status;
             status.unmap = vm->msg_pt->ack;
-            if (!ctx.ack | status.rx_error | (status.identifier != 0xF)) {
+            if ((!ctx.ack) | (status.rx_error) | (status.identifier != 0xF)) {
                 if (ctx.ack && status.identifier != 0xF) {
                     // This is probably a part of another message
                     // Send it to header
@@ -209,7 +209,6 @@ void save_alias(vm_t* vm, char* alias) {
 }
 
 unsigned char transmit(unsigned char* data, unsigned short size) {
-    unsigned short i = 0;
     const int col_check_data_num = 5;
     // wait tx unlock
     while(ctx.tx_lock);
