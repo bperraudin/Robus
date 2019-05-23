@@ -371,5 +371,6 @@ char msg_complete(msg_t* msg) {
             CURRENTMODULE.data_to_read = msg->header.size;
         }
     }
+    ctx.data_cb = get_header;
     return 0;
 }
