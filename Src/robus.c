@@ -99,6 +99,12 @@ vm_t* robus_module_create(RX_CB rx_cb, unsigned char type, const char *alias) {
     return &ctx.vm_table[ctx.vm_number++];
 }
 
+static void wait_tx_unlock(void) {
+    volatile int timeout = 0;
+    while(ctx.tx_lock && (timeout < 64000)) {
+        timeout++;
+    }
+}
 
 unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
     // Compute the full message size based on the header size info.
@@ -129,7 +135,7 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
         ctx.data_cb = get_header;
         hal_enable_irq();
         // wait timeout of collided packet
-        while(ctx.tx_lock);
+        wait_tx_unlock();
         // timer proportional to ID
         for (volatile unsigned int tempo = 0; tempo < (COLLISION_TIMER * (vm->id -1)); tempo++);
     }
@@ -211,7 +217,7 @@ void save_alias(vm_t* vm, char* alias) {
 unsigned char transmit(unsigned char* data, unsigned short size) {
     const int col_check_data_num = 5;
     // wait tx unlock
-    while(ctx.tx_lock);
+    wait_tx_unlock();
     hal_disable_irq();
     // re-lock the transmission
     ctx.tx_lock = TRUE;
