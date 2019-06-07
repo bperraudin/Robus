@@ -42,7 +42,7 @@ void USART1_IRQHandler(void)
  * \brief PTP interrupt management
  */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-	if(GPIO_Pin==ROBUS_PTPA_Pin){
+    if(GPIO_Pin==ROBUS_PTPA_Pin){
 		ptp_handler(BRANCH_A);
 		return;
 	}

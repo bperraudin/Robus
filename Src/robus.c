@@ -19,7 +19,7 @@ volatile context_t ctx;
 unsigned char transmit(unsigned char* data, unsigned short size);
 
 // Startup and network configuration
-void robus_init(void) {
+void robus_init(RX_CB callback) {
     // Init the number of created  virtual module.
     ctx.vm_number = 0;
     // Initialize the reception state machine
@@ -30,6 +30,8 @@ void robus_init(void) {
     ctx.type = NULLBOARD;
     // no transmission lock
     ctx.tx_lock = FALSE;
+    // Save luos callback
+    ctx.luos_cb = callback;
 
     // init detection structure
     reset_detection();

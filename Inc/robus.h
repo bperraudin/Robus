@@ -29,7 +29,7 @@ enum {
  * \brief Initialisation of the Robus communication lib.
  *
  */
-void robus_init(void);
+void robus_init(RX_CB callback);
 
 /**
  * \fn void robus_modules_clear(void)

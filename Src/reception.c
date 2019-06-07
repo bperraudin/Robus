@@ -194,8 +194,7 @@ void get_data(volatile unsigned char *data) {
                 ctx.data_cb = get_header;
                 if (CURRENTMSG.header.target_mode == ID || CURRENTMSG.header.target_mode == IDACK) {
                     msg_complete(&CURRENTMSG);
-                }
-                else {
+                } else {
                     if(ctx.vm_number == 0) {
                         // no module created, but save this ID in the void module.
                         msg_complete(&CURRENTMSG);
@@ -348,12 +347,12 @@ char msg_complete(msg_t* msg) {
 
                 // Call CM callback
                 if (CURRENTMODULE.rx_cb != 0) {
-                    CURRENTMODULE.rx_cb(&CURRENTMODULE, CURRENTMODULE.msg_pt);
                     CURRENTMODULE.message_available--;
                 }
                 else {
                     CURRENTMODULE.data_to_read = msg->header.size;
                 }
+                ctx.luos_cb(&CURRENTMODULE, CURRENTMODULE.msg_pt);
             break;
         }
    } else {
@@ -363,11 +362,12 @@ char msg_complete(msg_t* msg) {
         // Call CM callback
         if (CURRENTMODULE.rx_cb != 0) {
             msg->header.cmd -= PROTOCOL_CMD_NB;
-            CURRENTMODULE.rx_cb(&CURRENTMODULE, CURRENTMODULE.msg_pt);
+            ctx.luos_cb(&CURRENTMODULE, CURRENTMODULE.msg_pt);
             msg->header.cmd += PROTOCOL_CMD_NB;
             CURRENTMODULE.message_available--;
         }
         else {
+            ctx.luos_cb(&CURRENTMODULE, CURRENTMODULE.msg_pt);
             CURRENTMODULE.data_to_read = msg->header.size;
         }
     }

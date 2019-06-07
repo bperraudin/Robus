@@ -33,6 +33,7 @@ typedef struct __attribute__((__packed__)){
 
     // Variables
     DATA_CB data_cb;    /*!< Data management callback. */
+    RX_CB luos_cb;      /*!< Luos messages management callback. */
     status_t status;    /*!< Status. */
     unsigned short id;       /*!< Module ID. */
     unsigned char type;     /*!< Module type. */
