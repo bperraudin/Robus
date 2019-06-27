@@ -8,6 +8,7 @@
 #include "main.h"
 #include "eeprom.h"
 #include <stdio.h>
+#include "crc.h"
 
 uint16_t VirtAddVarTab[NB_OF_VAR] = { 0 };
 
@@ -50,6 +51,19 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 		ptp_handler(BRANCH_B);
 		return;
 	}
+}
+
+/**
+ * \fn unsigned char crc(unsigned char* data, unsigned char size)
+ * \brief generate a CRC
+ *
+ * \param *data data table
+ * \param size data size
+ *
+ * \return CRC value
+ */
+unsigned short crc(unsigned char* data, unsigned short size) {
+    return (unsigned short)HAL_CRC_Calculate(&hcrc, data, size);
 }
 
 void reverse_detection(branch_t branch) {

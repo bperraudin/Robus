@@ -93,29 +93,6 @@ unsigned char module_concerned(header_t* header) {
 }
 
 /**
- * \fn unsigned char crc(unsigned char* data, unsigned char size)
- * \brief generate a CRC
- *
- * \param *data data table
- * \param size data size
- *
- * \return CRC value
- */
-unsigned short crc(unsigned char* data, unsigned short size) {
-    unsigned char x;
-    unsigned short crc = 0xFFFF;
-
-    while (size--) {
-        x = crc >> 8 ^ *data++;
-        x ^= x>>4;
-        crc = (crc << 8) ^ ((unsigned int)(x << 12))
-                         ^ ((unsigned int)(x <<5))
-                         ^ ((unsigned int)x);
-    }
-    return (unsigned short)crc;
-}
-
-/**
  * \fn void timeout(flush)
  * \brief manage timeout event
  *

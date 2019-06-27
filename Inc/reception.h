@@ -10,8 +10,6 @@
 
 #include "context.h"
 
-unsigned short crc(unsigned char* data, unsigned short size);
-
 // Callbacks reception
 void get_header(volatile unsigned char *data);
 void get_data(volatile unsigned char *data);
