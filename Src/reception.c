@@ -24,6 +24,7 @@
 unsigned char keep = FALSE;
 unsigned char concernedmodules[MAX_VM_NUMBER] = {FALSE};
 unsigned short data_count = 0;
+unsigned short data_size = 0;
 // static timeout_t timeout; //TODO timeout management
 
 unsigned char module_concerned(header_t* header) {
@@ -144,6 +145,11 @@ void get_header(volatile unsigned char *data) {
 #endif
         // Reset the catcher.
         data_count = 0;
+        // Cap size for big messages
+        if (CURRENTMSG.header.size > MAX_DATA_MSG_SIZE)
+            data_size = MAX_DATA_MSG_SIZE;
+        else
+            data_size = CURRENTMSG.header.size;
         // Reset the msg allocation
         ctx.alloc_msg[ctx.current_buffer] = 0;
 
@@ -160,11 +166,11 @@ void get_header(volatile unsigned char *data) {
 void get_data(volatile unsigned char *data) {
     CURRENTMSG.data[data_count] = *data;
 
-    if (data_count > CURRENTMSG.header.size) {
+    if (data_count > data_size) {
         if (keep) {
-            CURRENTMSG.crc = ((unsigned short)CURRENTMSG.data[CURRENTMSG.header.size]) |
-                                              ((unsigned short)CURRENTMSG.data[CURRENTMSG.header.size + 1] << 8);
-            if (CURRENTMSG.crc == crc(CURRENTMSG.stream, CURRENTMSG.header.size + sizeof(header_t))) {
+            CURRENTMSG.crc = ((unsigned short)CURRENTMSG.data[data_size]) |
+                                              ((unsigned short)CURRENTMSG.data[data_size + 1] << 8);
+            if (CURRENTMSG.crc == crc(CURRENTMSG.stream, data_size + sizeof(header_t))) {
                 if (CURRENTMSG.header.target_mode == IDACK) {
                     send_ack();
                 }
@@ -327,7 +333,7 @@ char msg_complete(msg_t* msg) {
                     CURRENTMODULE.message_available--;
                 }
                 else {
-                    CURRENTMODULE.data_to_read = msg->header.size;
+                    CURRENTMODULE.data_to_read = data_size;
                 }
                 ctx.luos_cb(&CURRENTMODULE, CURRENTMODULE.msg_pt);
             break;
@@ -345,7 +351,7 @@ char msg_complete(msg_t* msg) {
         }
         else {
             ctx.luos_cb(&CURRENTMODULE, CURRENTMODULE.msg_pt);
-            CURRENTMODULE.data_to_read = msg->header.size;
+            CURRENTMODULE.data_to_read = data_size;
         }
     }
     ctx.data_cb = get_header;

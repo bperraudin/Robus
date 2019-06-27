@@ -110,7 +110,12 @@ static void wait_tx_unlock(void) {
 
 unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
     // Compute the full message size based on the header size info.
-    unsigned short full_size = sizeof(header_t) + msg->header.size;
+    unsigned short data_size = 0;
+    if (msg->header.size > MAX_DATA_MSG_SIZE)
+        data_size = MAX_DATA_MSG_SIZE;
+    else
+        data_size = msg->header.size;
+    unsigned short full_size = sizeof(header_t) + data_size;
     unsigned short crc_val = 0;
     unsigned char nbr_nak_retry = 0;
     // Set protocol revision and source ID on the message
@@ -121,8 +126,8 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
     // Add the CRC to the total size of the message
     full_size += 2;
     // Write the CRC into the message.
-    msg->data[msg->header.size] = (unsigned char)crc_val;
-    msg->data[msg->header.size + 1] = (unsigned char)(crc_val >> 8);
+    msg->data[data_size] = (unsigned char)crc_val;
+    msg->data[data_size + 1] = (unsigned char)(crc_val >> 8);
     ctx.vm_last_send = vm;
     ack_restart :
     nbr_nak_retry++;
