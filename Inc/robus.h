@@ -12,10 +12,6 @@
 #ifndef _ROBUS_H_
 #define _ROBUS_H_
 
-#define MAX_ALIAS_SIZE 16
-#define MAX_DATA_MSG_SIZE 128
-#define MAX_MULTICAST_ADDRESS 1
-
 #include "robus_struct.h"
 
 enum {
