@@ -27,7 +27,7 @@ void robus_init(RX_CB callback) {
     // Set default module id. This id is a void id used if no module is created.
     ctx.id = DEFAULTID;
     // VOID Module type
-    ctx.type = NULLBOARD;
+    ctx.type = 0;
     // no transmission lock
     ctx.tx_lock = FALSE;
     // Save luos callback

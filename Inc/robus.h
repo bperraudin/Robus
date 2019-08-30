@@ -14,12 +14,6 @@
 
 #include "robus_struct.h"
 
-enum {
-    NULLBOARD,
-    DEV_BOARD,
-    MOTOR_BOARD
-}module_list_t;
-
 /**
  * \fn void robus_init(void)
  * \brief Initialisation of the Robus communication lib.
