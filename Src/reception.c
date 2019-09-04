@@ -25,7 +25,6 @@ unsigned char keep = FALSE;
 unsigned char concernedmodules[MAX_VM_NUMBER] = {FALSE};
 unsigned short data_count = 0;
 unsigned short data_size = 0;
-// static timeout_t timeout; //TODO timeout management
 
 unsigned char module_concerned(header_t* header) {
     unsigned char concerned = FALSE;

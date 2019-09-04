@@ -15,9 +15,10 @@
 #include "robus_struct.h"
 
 /**
- * \fn void robus_init(void)
+ * \fn void robus_init(RX_CB)
  * \brief Initialisation of the Robus communication lib.
  *
+ * \param Luos function pointer into the rx callback interrupt.
  */
 void robus_init(RX_CB callback);
 
@@ -29,14 +30,13 @@ void robus_init(RX_CB callback);
 void robus_modules_clear(void);
 
 /**
- * \fn vm_t* robus_module_create(RX_CB rx_cb, unsigned char type, unsigned char *alias)
+ * \fn vm_t* robus_module_create(unsigned char type, unsigned char *alias)
  * \brief Initialisation of the Robus communication lib.
  *
- * \param rx_cb function pointer into the rx callback.
- * \param type type reference of this module hardware.
+ * \param type module type.
  * \param alias string (15 caracters max).
  *
- * \return virtual module object pointer.
+ * \return virtual module pointer.
  *
  */
 vm_t* robus_module_create(unsigned char type, const char *alias);
@@ -46,20 +46,20 @@ vm_t* robus_module_create(unsigned char type, const char *alias);
  * \brief  Send message function.
  *
  * \param virtual module who send.
- * \param msg Message to send to the slave.
+ * \param msg Message to send.
  *
- * \return send or not
+ * \return sent or not
  */
 unsigned char robus_send(vm_t* vm, msg_t *msg);
 
 /**
  * \fn unsigned char robus_send_sys(vm_t* vm, msg_t *msg)
- * \brief  Send system message function.
+ * \brief  Send Luos management messages.
  *
  * \param virtual module who send.
- * \param msg Message to send to the slave.
+ * \param msg Message to send.
  *
- * \return send or not
+ * \return sent or not
  */
 unsigned char robus_send_sys(vm_t* vm, msg_t *msg);
 

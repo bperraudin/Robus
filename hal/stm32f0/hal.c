@@ -112,11 +112,6 @@ void reset_PTP(branch_t branch) {
 	}
 }
 
-/*void hal_delay_ms(int factor) { // Do we really need that?
-    // TODO: do something clever here...
-	HAL_Delay(factor);
-}*/
-
 void set_baudrate(unsigned int baudrate) {
     LL_USART_Disable(USART1);
     LL_USART_InitTypeDef USART_InitStruct;
