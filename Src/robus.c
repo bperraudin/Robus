@@ -56,15 +56,9 @@ void robus_modules_clear(void) {
     ctx.vm_number = 0;
 }
 
-vm_t* robus_module_create(RX_CB rx_cb, unsigned char type, const char *alias) {
+vm_t* robus_module_create(unsigned char type, const char *alias) {
     unsigned char i = 0;
 
-    // module reception callback
-    /*if (++ctx.vm_number >= MAX_VM_NUMBER) // TODO Do it using compilation message error
-        return 0;
-    */
-    // Link the VM to his callback
-    ctx.vm_table[ctx.vm_number].rx_cb = rx_cb;
     // Set the module type
     ctx.vm_table[ctx.vm_number].type = type;
     // Initialise the module id, TODO the ID could be stored in EEprom, the default ID could be set in factory...
@@ -87,10 +81,6 @@ vm_t* robus_module_create(RX_CB rx_cb, unsigned char type, const char *alias) {
         }
         ctx.vm_table[ctx.vm_number].alias[i] = '\0';
     }
-    // Initialize the available message counter.
-    ctx.vm_table[ctx.vm_number].message_available = 0;
-    // Initialise the number of data available into the buffer.
-    ctx.vm_table[ctx.vm_number].data_to_read = 0;
     // Clear the msg allocation table.
     for (i=0; i < MSG_BUFFER_SIZE; i++) {
         ctx.alloc_msg[i] = 0;
@@ -191,25 +181,6 @@ unsigned char robus_send(vm_t* vm, msg_t *msg) {
     unsigned char ret = robus_send_sys(vm, msg);
     msg->header.cmd -= PROTOCOL_CMD_NB;
     return ret;
-}
-
-unsigned char robus_read(vm_t* vm) {
-    unsigned char data = 0;
-    if (vm->message_available > 1) {
-        ctx.status.rx_error = TRUE;
-    }
-    if (vm->message_available) {
-        if (vm->data_to_read > 0) {
-            data = vm->msg_pt->data[vm->msg_pt->header.size - vm->data_to_read--];
-            if (vm->data_to_read == 0) {
-                vm->message_available = 0;
-            }
-        }
-        else {
-            vm->message_available = 0;
-        }
-    }
-    return data;
 }
 
 void save_alias(vm_t* vm, char* alias) {

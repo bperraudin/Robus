@@ -45,7 +45,7 @@ void robus_modules_clear(void);
  * \return virtual module object pointer.
  *
  */
-vm_t* robus_module_create(RX_CB rx_cb, unsigned char type, const char *alias);
+vm_t* robus_module_create(unsigned char type, const char *alias);
 
 /**
  * \fn unsigned char robus_send(vm_t* vm, msg_t *msg)
@@ -68,16 +68,6 @@ unsigned char robus_send(vm_t* vm, msg_t *msg);
  * \return send or not
  */
 unsigned char robus_send_sys(vm_t* vm, msg_t *msg);
-
-/**
- * \fn unsigned char robus_read(vm_t* vm, msg_t *msg)
- * \brief  Send message function.
- *
- * \param virtual module who receive.
- *
- * \return a data
- */
-unsigned char robus_read(vm_t* vm);
 
 /**
  * \fn void save_alias(vm_t* vm, char* alias)

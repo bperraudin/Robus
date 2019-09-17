@@ -247,7 +247,6 @@ void catch_ack(volatile unsigned char *data) {
  */
 char msg_complete(msg_t* msg) {
     unsigned int baudrate = 0;
-    CURRENTMODULE.message_available++;
     if (msg->header.target_mode == ID ||
         msg->header.target_mode == IDACK ||
         msg->header.target_mode == TYPE ||
@@ -327,32 +326,16 @@ char msg_complete(msg_t* msg) {
                 // set VM data
                 CURRENTMODULE.msg_pt = msg;
                 msg->header.cmd -= PROTOCOL_CMD_NB;
-
-                // Call CM callback
-                if (CURRENTMODULE.rx_cb != 0) {
-                    CURRENTMODULE.message_available--;
-                }
-                else {
-                    CURRENTMODULE.data_to_read = data_size;
-                }
                 ctx.luos_cb(&CURRENTMODULE, CURRENTMODULE.msg_pt);
             break;
         }
    } else {
         // set VM data
         CURRENTMODULE.msg_pt = msg;
-
-        // Call CM callback
-        if (CURRENTMODULE.rx_cb != 0) {
-            msg->header.cmd -= PROTOCOL_CMD_NB;
-            ctx.luos_cb(&CURRENTMODULE, CURRENTMODULE.msg_pt);
-            msg->header.cmd += PROTOCOL_CMD_NB;
-            CURRENTMODULE.message_available--;
-        }
-        else {
-            ctx.luos_cb(&CURRENTMODULE, CURRENTMODULE.msg_pt);
-            CURRENTMODULE.data_to_read = data_size;
-        }
+        // call callback
+        msg->header.cmd -= PROTOCOL_CMD_NB;
+        ctx.luos_cb(&CURRENTMODULE, CURRENTMODULE.msg_pt);
+        msg->header.cmd += PROTOCOL_CMD_NB;
     }
     ctx.data_cb = get_header;
     return 0;

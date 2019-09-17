@@ -80,8 +80,6 @@ typedef struct __attribute__((__packed__)){
  * please refer to the documentation
  */
 typedef struct __attribute__((__packed__)) vm_t{
-    // Callback
-    void (*rx_cb) (struct vm_t* vm, msg_t *msg);
 
     // Module infomations
     unsigned short id;                  /*!< Module ID. */
@@ -93,9 +91,7 @@ typedef struct __attribute__((__packed__)) vm_t{
     msg_t* msg_pt;                                               /*!< Message pointer. */
     unsigned char max_multicast_target;                          /*!< Position pointer of the last multicast target. */
     unsigned short multicast_target_bank[MAX_MULTICAST_ADDRESS]; /*!< multicast target bank. */
-    unsigned char message_available;                             /*!< signal a new message available */
-    unsigned char data_to_read;                                  /*!< data ready to be reed */
-    unsigned short dead_module_spotted;                          /*!< The ID of a module that don't reply to a lot of IACK msg */
+    unsigned short dead_module_spotted;                          /*!< The ID of a module that don't reply to a lot of ACK msg */
 }vm_t;
 
 typedef void (*RX_CB) (vm_t* vm, msg_t *msg);
