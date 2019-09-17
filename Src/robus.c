@@ -153,7 +153,18 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
     }
     // localhost management
     if (module_concerned(&msg->header)) {
-        msg_complete(msg);
+        hal_disable_irq();
+        // Secure the message memory by copying it into msg buffer
+        memcpy(&ctx.msg[ctx.current_buffer], msg, sizeof(header_t) + msg->header.size + 2);
+        // Manage this message
+        msg_complete(&ctx.msg[ctx.current_buffer]);
+        // Select next message buffer slot.
+        ctx.current_buffer++;
+        if (ctx.current_buffer == MSG_BUFFER_SIZE) {
+            ctx.current_buffer = 0;
+        }
+        flush();
+        hal_enable_irq();
     }
     return 0;
 }
