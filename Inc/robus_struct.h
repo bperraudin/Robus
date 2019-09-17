@@ -12,6 +12,8 @@
 #ifndef _ROBUS_STRUCT_H_
 #define _ROBUS_STRUCT_H_
 
+#include "config.h"
+
 /**
  * \enum target_mode_t
  * \brief Message addressing mode enum.
@@ -42,9 +44,9 @@ typedef struct __attribute__((__packed__)){
             unsigned short target_mode : 4;    /*!< Select targeting mode (ID, ID+ACK, Multicast/Broadcast, Type). */
             unsigned short source : 12;        /*!< Source address, it can be (ID, Multicast/Broadcast, Type). */
             unsigned char cmd;                 /*!< msg definition. */
-            unsigned char size;                /*!< Size of the data field. */
+            unsigned short size;                /*!< Size of the data field. */
         };
-        unsigned char unmap[6];                /*!< Uncmaped form. */
+        unsigned char unmap[7];                /*!< Unmaped form. */
     };
 }header_t;
 
