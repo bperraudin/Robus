@@ -15,7 +15,6 @@
 typedef enum {
     GET_ID,              /*!< Reply with ID. */
     WRITE_ID,            /*!< Get and save a new given ID. */
-    WRITE_ALIAS,         /*!< Get and save a new given alias. */
     GET_MODULE_TYPE,     /*!< Reply with module_type number. */
     GET_STATUS,          /*!< Reply with a status register. */
     GET_FIRM_REVISION,   /*!< Reply with the actual firmware revision number. */

@@ -39,7 +39,7 @@ void robus_modules_clear(void);
  * \return virtual module pointer.
  *
  */
-vm_t* robus_module_create(unsigned char type, const char *alias);
+vm_t* robus_module_create(unsigned char type);
 
 /**
  * \fn unsigned char robus_send(vm_t* vm, msg_t *msg)
@@ -62,15 +62,5 @@ unsigned char robus_send(vm_t* vm, msg_t *msg);
  * \return sent or not
  */
 unsigned char robus_send_sys(vm_t* vm, msg_t *msg);
-
-/**
- * \fn void save_alias(vm_t* vm, char* alias)
- * \brief  Save Alias in EEprom.
- *
- * \param concerned virtual module.
- * \param name string.
- *
- */
-void save_alias(vm_t* vm, char* alias);
 
 #endif /* _ROBUS_H_ */

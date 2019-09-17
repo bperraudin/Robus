@@ -23,7 +23,5 @@ void set_PTP(branch_t branch);
 void reset_PTP(branch_t branch);
 unsigned char get_PTP(branch_t branch);
 void reverse_detection(branch_t branch);
-void write_alias(unsigned short id, char* alias);
-char read_alias(unsigned short id, char* alias);
 
 #endif /* _HAL_H_ */

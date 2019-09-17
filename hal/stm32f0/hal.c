@@ -6,11 +6,8 @@
 #include "gpio.h"
 #include "stm32f0xx_hal.h"
 #include "main.h"
-#include "eeprom.h"
 #include <stdio.h>
 #include "crc.h"
-
-uint16_t VirtAddVarTab[NB_OF_VAR] = { 0 };
 
 /**
  * \fn void USART1_IRQHandler(void)
@@ -152,14 +149,6 @@ void hal_init(void) {
 	reset_PTP(BRANCH_A);
 	reset_PTP(BRANCH_B);
 	reset_detection();
-
-	// Unlock the Flash Program Erase controller
-	HAL_FLASH_Unlock();
-	// EEPROM Init
-	for (uint16_t i = 0; i < NB_OF_VAR; i++) {
-		VirtAddVarTab[i] = i;
-	}
-	EE_Init();
 }
 
 /**
@@ -260,31 +249,4 @@ void hal_enable_tx(void) {
  */
 void hal_disable_tx(void) {
     HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port,ROBUS_DE_Pin,GPIO_PIN_RESET);
-}
-// ******** Alias management ****************
-void write_alias(unsigned short id, char* alias) {
-    const uint16_t addr = id * (MAX_ALIAS_SIZE +1);
-    for (uint8_t i=0; i<MAX_ALIAS_SIZE; i++) {
-        // here we save an uint8_t on an uint16_t
-        EE_WriteVariable(addr + i, (uint16_t)alias[i]);
-    }
-}
-
-char read_alias(unsigned short id, char* alias) {
-     const uint16_t addr = id * (MAX_ALIAS_SIZE +1);
-     uint16_t data;
-     EE_ReadVariable(addr, &data);
-     // Check name integrity
-     if (((((char)data < 'A') | ((char)data > 'Z'))
-             & (((char)data < 'a') | ((char)data > 'z')))
-             | ((char)data == '\0')) {
-         return 0;
-     } else {
-         alias[0] = (char)data;
-     }
-     for (uint8_t i=1; i<MAX_ALIAS_SIZE; i++) {
-        EE_ReadVariable(addr + i, &data);
-        alias[i] = (char)data;
-     }
-     return 1;
 }

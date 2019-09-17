@@ -24,7 +24,6 @@
 #ifndef MSG_BUFFER_SIZE
     #define MSG_BUFFER_SIZE 5
 #endif
-
 #ifndef MODULETYPE
     #define MODULETYPE DEV_BOARD
 #endif

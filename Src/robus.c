@@ -56,31 +56,13 @@ void robus_modules_clear(void) {
     ctx.vm_number = 0;
 }
 
-vm_t* robus_module_create(unsigned char type, const char *alias) {
+vm_t* robus_module_create(unsigned char type) {
     unsigned char i = 0;
 
     // Set the module type
     ctx.vm_table[ctx.vm_number].type = type;
     // Initialise the module id, TODO the ID could be stored in EEprom, the default ID could be set in factory...
     ctx.vm_table[ctx.vm_number].id = DEFAULTID;
-    // Save default alias
-    for (i=0; i < MAX_ALIAS_SIZE-1; i++) {
-        ctx.vm_table[ctx.vm_number].default_alias[i] = alias[i];
-        if (ctx.vm_table[ctx.vm_number].default_alias[i] == '\0')
-            break;
-    }
-    ctx.vm_table[ctx.vm_number].default_alias[i] = '\0';
-    // Initialise the module alias to 0
-    memset((void *)ctx.vm_table[ctx.vm_number].alias, 0, sizeof(ctx.vm_table[ctx.vm_number].alias));
-    if (!read_alias(ctx.vm_number, (char *)ctx.vm_table[ctx.vm_number].alias)) {
-        // if no alias saved keep the default one
-        for (i=0; i < MAX_ALIAS_SIZE-1; i++) {
-            ctx.vm_table[ctx.vm_number].alias[i] = alias[i];
-            if (ctx.vm_table[ctx.vm_number].alias[i] == '\0')
-                break;
-        }
-        ctx.vm_table[ctx.vm_number].alias[i] = '\0';
-    }
     // Clear the msg allocation table.
     for (i=0; i < MSG_BUFFER_SIZE; i++) {
         ctx.alloc_msg[i] = 0;
@@ -181,15 +163,6 @@ unsigned char robus_send(vm_t* vm, msg_t *msg) {
     unsigned char ret = robus_send_sys(vm, msg);
     msg->header.cmd -= PROTOCOL_CMD_NB;
     return ret;
-}
-
-void save_alias(vm_t* vm, char* alias) {
-    int i;
-    // Get vm number
-    for (i=0; i<MAX_VM_NUMBER; i++) {
-        if (vm == &ctx.vm_table[i]) break;
-    }
-    write_alias(i, alias);
 }
 
 unsigned char transmit(unsigned char* data, unsigned short size) {
