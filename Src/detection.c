@@ -81,9 +81,14 @@ unsigned char topology_detection(vm_t* vm) {
     // wait a bit
     for (volatile unsigned int i = 0; i < TIMERVAL; i++);
 
-    // Parse internal vm
+    // setup sending vm
+    vm->id = newid++;
+
+    // Parse internal vm other than the sending one
     for (unsigned char i=0; i < ctx.vm_number; i++) {
-        ctx.vm_table[i].id = newid++;
+        if (&ctx.vm_table[i] != vm) {
+            ctx.vm_table[i].id = newid++;
+        }
     }
 
     ctx.detection.detected_vm = ctx.vm_number;
