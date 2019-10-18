@@ -113,9 +113,11 @@ void timeout (void) {
  * \return
  */
 void flush (void) {
+    hal_disable_irq();
     ctx.data_cb = get_header;
     keep = FALSE;
     data_count = 0;
+    hal_enable_irq();
 }
 
 /**
