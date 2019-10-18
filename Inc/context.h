@@ -41,6 +41,7 @@ typedef struct __attribute__((__packed__)){
     volatile unsigned char tx_lock; /*!< transmission locking management. */
     volatile unsigned char collision; /*!< collision flag. */
     volatile unsigned char ack; /*!< acknoledge flag. */
+    unsigned int baudrate;            /*!< System current baudrate. */
 
     detection_mode_t detection_mode;
     detection_t detection;
@@ -54,7 +55,6 @@ typedef struct __attribute__((__packed__)){
     msg_t msg[MSG_BUFFER_SIZE];          /*!< Message table (one for each virtual module). */
     unsigned char current_buffer;        /*!< current msg buffer used. */
     unsigned char alloc_msg[MSG_BUFFER_SIZE];            /*!< Message allocation table. */
-
 }context_t;
 
 volatile extern context_t ctx;

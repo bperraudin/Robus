@@ -32,6 +32,8 @@ void robus_init(RX_CB callback) {
     ctx.tx_lock = FALSE;
     // Save luos callback
     ctx.luos_cb = callback;
+    // Save luos baudrate
+    ctx.baudrate = DEFAULTBAUDRATE;
 
     // init detection structure
     reset_detection();
