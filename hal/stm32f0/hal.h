@@ -4,7 +4,7 @@
 #include "context.h"
 #include "detection.h"
 
-unsigned short crc(unsigned char* data, unsigned short size);
+void crc(unsigned char* data, unsigned short size, unsigned char* crc);
 void hal_init(void);
 void set_baudrate(unsigned int baudrate);
 unsigned char hal_transmit(unsigned char* data, unsigned short size);

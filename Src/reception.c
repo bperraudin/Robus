@@ -119,6 +119,7 @@ void flush (void) {
     data_count = 0;
     hal_enable_irq();
 }
+static unsigned short crc_val = 0;
 
 /**
  * \fn void get_header(volatile unsigned char *data)
@@ -155,6 +156,10 @@ void get_header(volatile unsigned char *data) {
         ctx.alloc_msg[ctx.current_buffer] = 0;
 
         keep = module_concerned(&CURRENTMSG.header);
+        if (keep) {
+            // start crc computation
+            crc(CURRENTMSG.stream, sizeof(header_t), (unsigned char *)&crc_val);
+        }
     }
 }
 
@@ -166,12 +171,15 @@ void get_header(volatile unsigned char *data) {
  */
 void get_data(volatile unsigned char *data) {
     CURRENTMSG.data[data_count] = *data;
-
+    if ((data_count < data_size) && keep) {
+        // Continue CRC computation until the end of data
+        crc(&CURRENTMSG.data[data_count], 1, (unsigned char *)&crc_val);
+    }
     if (data_count > data_size) {
         if (keep) {
             CURRENTMSG.crc = ((unsigned short)CURRENTMSG.data[data_size]) |
                                               ((unsigned short)CURRENTMSG.data[data_size + 1] << 8);
-            if (CURRENTMSG.crc == crc(CURRENTMSG.stream, data_size + sizeof(header_t))) {
+            if (CURRENTMSG.crc == crc_val) {
                 if (CURRENTMSG.header.target_mode == IDACK) {
                     send_ack();
                 }

@@ -90,18 +90,14 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
     else
         data_size = msg->header.size;
     unsigned short full_size = sizeof(header_t) + data_size;
-    unsigned short crc_val = 0;
     unsigned char nbr_nak_retry = 0;
     // Set protocol revision and source ID on the message
     msg->header.protocol = PROTOCOL_REVISION;
     msg->header.source = vm->id;
     // compute the CRC
-    crc_val = crc(msg->stream, full_size);
+    crc(msg->stream, full_size, (volatile unsigned short*)&msg->data[data_size]);
     // Add the CRC to the total size of the message
     full_size += 2;
-    // Write the CRC into the message.
-    msg->data[data_size] = (unsigned char)crc_val;
-    msg->data[data_size + 1] = (unsigned char)(crc_val >> 8);
     ctx.vm_last_send = vm;
     ack_restart :
     nbr_nak_retry++;
@@ -109,7 +105,7 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
     ctx.ack = FALSE;
     hal_enable_irq();
     // Send message
-    while (transmit(msg->stream, full_size)) {
+    while (transmit((volatile unsigned char*)msg->stream, full_size)) {
         // There is a collision
         hal_disable_irq();
         // switch reception in header mode

@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include "crc.h"
 
+volatile unsigned char* crc_ptr;
+
 /**
  * \fn void USART1_IRQHandler(void)
  * \brief This function handles USART1 global interrupt / USART1 wake-up interrupt through EXTI line 25.
@@ -59,8 +61,15 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
  *
  * \return CRC value
  */
-unsigned short crc(unsigned char* data, unsigned short size) {
-    return (unsigned short)HAL_CRC_Calculate(&hcrc, data, size);
+void crc(unsigned char* data, unsigned short size, unsigned char* crc) {
+    unsigned short calc;
+    if (size > 1) {
+        calc = (unsigned short)HAL_CRC_Calculate(&hcrc, data, size);
+    } else {
+        calc = (unsigned short)HAL_CRC_Accumulate(&hcrc, data, 1);
+    }
+    crc[0] = (unsigned char)calc;
+    crc[1] = (unsigned char)(calc >> 8);
 }
 
 void reverse_detection(branch_t branch) {
