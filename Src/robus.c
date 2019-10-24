@@ -85,6 +85,7 @@ static void wait_tx_unlock(void) {
 unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
     // Compute the full message size based on the header size info.
     unsigned short data_size = 0;
+    unsigned char fail = 0;
     if (msg->header.size > MAX_DATA_MSG_SIZE)
         data_size = MAX_DATA_MSG_SIZE;
     else
@@ -144,6 +145,7 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
                 } else {
                     // Set the dead module ID into the VM
                     vm->dead_module_spotted = msg->header.target;
+                    fail = 1;
                 }
             }
             ctx.ack = 0;
@@ -164,7 +166,7 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
         flush();
         hal_enable_irq();
     }
-    return 0;
+    return fail;
 }
 
 unsigned char robus_send(vm_t* vm, msg_t *msg) {
