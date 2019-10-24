@@ -126,7 +126,7 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
             // ACK needed, change the state of state machine for wait a ACK
             ctx.data_cb = catch_ack;
             volatile int time_out = 0;
-            while (!ctx.ack & (time_out < 60)){
+            while (!ctx.ack & (time_out < (60 * (1000000/ctx.baudrate)))){
                 time_out++;
             }
             status_t status;
