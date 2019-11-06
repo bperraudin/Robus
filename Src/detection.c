@@ -102,7 +102,9 @@ unsigned char topology_detection(vm_t* vm) {
             if (module_number++ > 500) {
                 break;
             }
-            set_extern_id(vm, BROADCAST, BROADCAST_VAL, newid++);
+            if (set_extern_id(vm, IDACK, DEFAULTID, newid++)) {
+                break;
+            }
             for (volatile unsigned int i = 0; i < (TIMERVAL * 4); i++);
         }
     }
@@ -115,7 +117,9 @@ unsigned char topology_detection(vm_t* vm) {
             if (module_number++ > 500) {
                 break;
             }
-            set_extern_id(vm, BROADCAST, BROADCAST_VAL, newid++);
+            if (set_extern_id(vm, IDACK, DEFAULTID, newid++)) {
+                break;
+            }
             for (volatile unsigned int i = 0; i < (TIMERVAL * 4); i++);
         }
     }

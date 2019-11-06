@@ -33,13 +33,6 @@ unsigned char module_concerned(header_t* header) {
         case IDACK:
             ctx.status.rx_error = FALSE;
         case ID:
-            // Default id
-            if(header->target == ctx.id) {
-                concerned = TRUE;
-                ctx.alloc_msg[ctx.current_buffer] = 0;
-                ctx.data_cb = get_data;
-                break;
-            }
             // Check all VM id
             for (int i = 0; i < ctx.vm_number; i++) {
                 concerned = (header->target == ctx.vm_table[i].id);
@@ -180,21 +173,17 @@ void get_data(volatile unsigned char *data) {
             CURRENTMSG.crc = ((unsigned short)CURRENTMSG.data[data_size]) |
                                               ((unsigned short)CURRENTMSG.data[data_size + 1] << 8);
             if (CURRENTMSG.crc == crc_val) {
-                if (CURRENTMSG.header.target_mode == IDACK) {
+                if ((CURRENTMSG.header.target_mode == IDACK) && (CURRENTMSG.header.target != DEFAULTID)) {
                     send_ack();
                 }
                 ctx.data_cb = get_header;
                 if (CURRENTMSG.header.target_mode == ID || CURRENTMSG.header.target_mode == IDACK) {
                     msg_complete(&CURRENTMSG);
                 } else {
-                    if(ctx.vm_number == 0) {
-                        // no module created, but save this ID in the void module.
-                        msg_complete(&CURRENTMSG);
-                    }
                     for (int i = 0; i < ctx.vm_number; i++) {
                         if (concernedmodules[i]) {
                             ctx.alloc_msg[ctx.current_buffer] = i;
-                            if (msg_complete(&CURRENTMSG))break;
+                            msg_complete(&CURRENTMSG);
                             concernedmodules[i] = FALSE;
                         }
                     }
@@ -205,7 +194,7 @@ void get_data(volatile unsigned char *data) {
                 }
             } else {
                 ctx.status.rx_error = TRUE;
-                if (CURRENTMSG.header.target_mode == IDACK) {
+                if ((CURRENTMSG.header.target_mode == IDACK) && (CURRENTMSG.header.target != DEFAULTID)) {
                     send_ack();
                 }
             }
@@ -254,7 +243,7 @@ void catch_ack(volatile unsigned char *data) {
  *
  * \param *data byte received from serial
  */
-char msg_complete(msg_t* msg) {
+void msg_complete(msg_t* msg) {
     if (msg->header.target_mode == ID ||
         msg->header.target_mode == IDACK ||
         msg->header.target_mode == TYPE ||
@@ -262,10 +251,13 @@ char msg_complete(msg_t* msg) {
         switch (msg->header.cmd) {
             case WRITE_ID:
                 // Get and save a new given ID
-                if ((msg->header.target_mode == BROADCAST) &
+                if ((msg->header.target_mode == IDACK) &
+                    (ctx.vm_table[ctx.detection.detected_vm].id == DEFAULTID) &
                     (ctx.detection.keepline != NO_BRANCH) &
                     (ctx.detection_mode != MASTER_DETECT) &
                     (!ctx.detection.detection_end)) {
+                    // Acknoledge ID reception
+                    send_ack();
                     // We are on topology detection mode, and this is our turn
                     // Save id for the next module we have on this board
                     ctx.vm_table[ctx.detection.detected_vm++].id =
@@ -292,9 +284,8 @@ char msg_complete(msg_t* msg) {
                             }
                         }
                     }
-                    return 1;
                 }
-                else if (msg->header.target_mode != BROADCAST) {
+                else if (msg->header.target != DEFAULTID) {
                     CURRENTMODULE.id = (((unsigned short)msg->data[1]) |
                                        ((unsigned short)msg->data[0] << 8));
                 }
@@ -303,15 +294,10 @@ char msg_complete(msg_t* msg) {
                 reset_PTP(BRANCH_B);
                 reset_PTP(BRANCH_A);
                 reset_detection();
-            break;
-            case GET_ID:
-            // call something...
-            case GET_MODULE_TYPE:
-            // call something...
-            case GET_STATUS:
-            // call something...
-            case GET_FIRM_REVISION:
-            // call something...
+                // Reinit VM id
+                for (int i = 0; i< ctx.vm_number; i++) {
+                    ctx.vm_table[i].id = DEFAULTID;
+                }
             break;
             case SET_BAUDRATE:
                 memcpy(&ctx.baudrate, msg->data, msg->header.size);
@@ -333,5 +319,4 @@ char msg_complete(msg_t* msg) {
         msg->header.cmd += PROTOCOL_CMD_NB;
     }
     ctx.data_cb = get_header;
-    return 0;
 }

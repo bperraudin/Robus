@@ -20,7 +20,7 @@ void catch_ack(volatile unsigned char *data);
 
 void flush (void);
 void timeout (void);
-char msg_complete(msg_t* msg);
+void msg_complete(msg_t* msg);
 unsigned char module_concerned(header_t* header);
 
 

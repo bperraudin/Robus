@@ -28,15 +28,16 @@ void send_ack(void) {
 
 unsigned char reset_network_detection(vm_t* vm) {
 
-	reset_PTP(BRANCH_B);
-	reset_PTP(BRANCH_A);
-	reset_detection();
-	msg_t msg;
+    reset_PTP(BRANCH_B);
+    reset_PTP(BRANCH_A);
+    reset_detection();
+    msg_t msg;
 
-	msg.header.target = BROADCAST_VAL;
-	msg.header.target_mode = BROADCAST;
-	msg.header.cmd = RESET_DETECTION;
-	msg.header.size = 0;
+    set_extern_id(vm, BROADCAST, BROADCAST_VAL, DEFAULTID);
+    msg.header.target = BROADCAST_VAL;
+    msg.header.target_mode = BROADCAST;
+    msg.header.cmd = RESET_DETECTION;
+    msg.header.size = 0;
 
     if (robus_send_sys(vm, &msg))
         return 1;
