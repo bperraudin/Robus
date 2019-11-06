@@ -73,36 +73,3 @@ unsigned char set_network_baudrate(vm_t* vm, unsigned int baudrate) {
         return 1;
     return 0;
 }
-
-// unsigned char get_extern_module_type(unsigned short addr,
-//                                      unsigned short *module_type) {
-//     if (hal_addr(addr, TX)) {
-//         hal_transmit(STOP);
-//         return 1;
-//     }
-//     if (hal_write(GET_MODULE_TYPE)) {
-//         hal_transmit(STOP);
-//         return 1;
-//     }
-//     if (hal_addr(addr, RX)) {
-//         hal_transmit(STOP);
-//         return 1;
-//     }
-//     if (hal_read(FALSE, module_type)) {
-//         hal_transmit(STOP);
-//         return 1;
-//     }
-//     hal_transmit(STOP);
-//     return 0;
-// }
-
-
- // // Reply with ID
- //    SET_ID,
- //    ping(unsigned short addr);
- //    // Reply with module_type number
- //    GET_MODULE_TYPE,
- //    // Reply with a status register
- //    GET_STATUS,
- //    // Reply with the actual firmware revision number
- //    GET_FIRM_REVISION,

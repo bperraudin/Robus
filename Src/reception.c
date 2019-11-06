@@ -270,7 +270,7 @@ void msg_complete(msg_t* msg) {
                         if (ctx.detection.keepline == BRANCH_A) {
                             // check if we have a module on the other side
                             if (!poke(BRANCH_B)) {
-                                // no mudule on the other side, free the ptp line
+                                // no module on the other side, free the ptp line
                                 reset_PTP(BRANCH_A);
                                 reset_detection();
                             }
@@ -278,7 +278,7 @@ void msg_complete(msg_t* msg) {
                         else if (ctx.detection.keepline == BRANCH_B) {
                             // check if we have a module on the other side
                             if (!poke(BRANCH_A)) {
-                                // no mudule on the other side, free the ptp line
+                                // no module on the other side, free the ptp line
                                 reset_PTP(BRANCH_B);
                                 reset_detection();
                             }
