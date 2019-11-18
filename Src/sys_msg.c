@@ -27,13 +27,13 @@ void send_ack(void) {
 }
 
 unsigned char reset_network_detection(vm_t* vm) {
-
-    reset_PTP(BRANCH_B);
-    reset_PTP(BRANCH_A);
+    for (unsigned char branch = 0; branch < NO_BRANCH; branch++){
+        reset_PTP(branch);
+        ctx.detection.branches[branch] = 0;
+    }
     reset_detection();
     msg_t msg;
 
-    set_extern_id(vm, BROADCAST, BROADCAST_VAL, DEFAULTID);
     msg.header.target = BROADCAST_VAL;
     msg.header.target_mode = BROADCAST;
     msg.header.cmd = RESET_DETECTION;
@@ -41,6 +41,11 @@ unsigned char reset_network_detection(vm_t* vm) {
 
     if (robus_send_sys(vm, &msg))
         return 1;
+
+    // Reinit VM id
+    for (int i = 0; i< ctx.vm_number; i++) {
+        ctx.vm_table[i].id = DEFAULTID;
+    }
     return 0;
 }
 

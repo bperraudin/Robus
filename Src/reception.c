@@ -33,6 +33,13 @@ unsigned char module_concerned(header_t* header) {
         case IDACK:
             ctx.status.rx_error = FALSE;
         case ID:
+            // Get ID even if this is default ID and we have an activ branch waiting to be linked to a module id
+            if((header->target == ctx.id) && (ctx.detection.activ_branch != NO_BRANCH)) {
+                concerned = TRUE;
+                ctx.alloc_msg[ctx.current_buffer] = 0;
+                ctx.data_cb = get_data;
+                break;
+            }
             // Check all VM id
             for (int i = 0; i < ctx.vm_number; i++) {
                 concerned = (header->target == ctx.vm_table[i].id);
@@ -194,7 +201,7 @@ void get_data(volatile unsigned char *data) {
                 }
             } else {
                 ctx.status.rx_error = TRUE;
-                if ((CURRENTMSG.header.target_mode == IDACK) && (CURRENTMSG.header.target != DEFAULTID)) {
+                if ((CURRENTMSG.header.target_mode == IDACK)) {
                     send_ack();
                 }
             }
@@ -250,49 +257,49 @@ void msg_complete(msg_t* msg) {
         msg->header.target_mode == BROADCAST) {
         switch (msg->header.cmd) {
             case WRITE_ID:
-                // Get and save a new given ID
-                if ((msg->header.target_mode == IDACK) &
-                    (ctx.vm_table[ctx.detection.detected_vm].id == DEFAULTID) &
-                    (ctx.detection.keepline != NO_BRANCH) &
-                    (ctx.detection_mode != MASTER_DETECT) &
-                    (!ctx.detection.detection_end)) {
-                    // Acknoledge ID reception
-                    send_ack();
-                    // We are on topology detection mode, and this is our turn
-                    // Save id for the next module we have on this board
-                    ctx.vm_table[ctx.detection.detected_vm++].id =
-                        (((unsigned short)msg->data[1]) |
-                        ((unsigned short)msg->data[0] << 8));
-
-                    // Check if that was the last virtual module
-                    if (ctx.detection.detected_vm >= ctx.vm_number) {
-                        ctx.detection.detection_end = TRUE;
-                        if (ctx.detection.keepline == BRANCH_A) {
-                            // check if we have a module on the other side
-                            if (!poke(BRANCH_B)) {
-                                // no module on the other side, free the ptp line
-                                reset_PTP(BRANCH_A);
-                                reset_detection();
+                if (ctx.detection.activ_branch == NO_BRANCH) {
+                    // Get and save a new given ID
+                    if ((ctx.vm_table[ctx.detection.detected_vm].id == DEFAULTID) &
+                        (ctx.detection.keepline != NO_BRANCH) &
+                        (ctx.detection_mode != MASTER_DETECT) &
+                        (!ctx.detection.detection_end)) {
+                            if (msg->header.target_mode == IDACK){
+                                // Acknoledge ID reception
+                                send_ack();
                             }
-                        }
-                        else if (ctx.detection.keepline == BRANCH_B) {
-                            // check if we have a module on the other side
-                            if (!poke(BRANCH_A)) {
-                                // no module on the other side, free the ptp line
-                                reset_PTP(BRANCH_B);
-                                reset_detection();
+                            // We are on topology detection mode, and this is our turn
+                            // Save id for the next module we have on this board
+                            ctx.vm_table[ctx.detection.detected_vm++].id =
+                                (((unsigned short)msg->data[1]) |
+                                ((unsigned short)msg->data[0] << 8));
+                            if (ctx.detection.detected_vm == 1){
+                                // This is the first internal module, save the input branch with the previous ID
+                                ctx.detection.branches[ctx.detection.keepline] = ctx.vm_table[0].id-1;
                             }
-                        }
+                            // Check if that was the last virtual module
+                            if (ctx.detection.detected_vm >= ctx.vm_number) {
+                                ctx.detection.detection_end = TRUE;
+                                poke_next_branch();
+                            }
                     }
-                }
-                else if (msg->header.target != DEFAULTID) {
-                    CURRENTMODULE.id = (((unsigned short)msg->data[1]) |
-                                       ((unsigned short)msg->data[0] << 8));
+                    else if (msg->header.target != DEFAULTID) {
+                        CURRENTMODULE.id = (((unsigned short)msg->data[1]) |
+                                           ((unsigned short)msg->data[0] << 8));
+                    }
+                } else {
+                    unsigned short value =(((unsigned short)msg->data[1]) |
+                                          ((unsigned short)msg->data[0] << 8));
+                    //We need to save this ID as a connection on a branch
+                    ctx.detection.branches[ctx.detection.activ_branch] = value;
+                    ctx.detection.activ_branch = NO_BRANCH;
                 }
             break;
             case RESET_DETECTION:
-                reset_PTP(BRANCH_B);
-                reset_PTP(BRANCH_A);
+                // Reinit branch state and link
+                for (unsigned char branch = 0; branch < NO_BRANCH; branch++) {
+                    reset_PTP(branch);
+                    ctx.detection.branches[branch] = 0;
+                }
                 reset_detection();
                 // Reinit VM id
                 for (int i = 0; i< ctx.vm_number; i++) {

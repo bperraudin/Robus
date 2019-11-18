@@ -37,6 +37,9 @@ void robus_init(RX_CB callback) {
 
     // init detection structure
     reset_detection();
+    for (unsigned char branch; branch < NO_BRANCH; branch++){
+        ctx.detection.branches[branch] = 0;
+    }
 
     // Clear message allocation buffer table
     for (int i = 0; i < MSG_BUFFER_SIZE; i++) {
@@ -120,7 +123,7 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
     // Check if ACK needed
     if (msg->header.target_mode == IDACK) {
         // Check if it is a localhost message
-        if (module_concerned(&msg->header)) {
+        if (module_concerned(&msg->header) && (msg->header.target != DEFAULTID)) {
             send_ack();
             ctx.ack = 0;
         } else {
