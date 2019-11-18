@@ -1,8 +1,14 @@
 #ifndef _HAL_H_
 #define _HAL_H_
 
+ // list of all branches of your configuration.
+typedef enum {
+    BRANCH_A,
+    BRANCH_B,
+    NO_BRANCH // you have to keep this one at the last position
+}branch_t;
+
 #include "context.h"
-#include "detection.h"
 
 void crc(unsigned char* data, unsigned short size, unsigned char* crc);
 void hal_init(void);

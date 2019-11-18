@@ -1,6 +1,5 @@
 #include "hal.h"
 #include "reception.h"
-
 #include "stm32f0xx_ll_usart.h"
 #include "usart.h"
 #include "gpio.h"
@@ -8,6 +7,7 @@
 #include "main.h"
 #include <stdio.h>
 #include "crc.h"
+#include "detection.h"
 
 volatile unsigned char* crc_ptr;
 

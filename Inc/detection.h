@@ -9,12 +9,7 @@
 #define _DETECTION_H_
 
 #include <robus.h>
-
-typedef enum {
-    BRANCH_A,
-    BRANCH_B,
-    NO_BRANCH
-}branch_t;
+#include <hal.h>
 
 typedef enum {
     NO_DETECT,
