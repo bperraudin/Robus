@@ -248,6 +248,10 @@ void hal_disable_rx(void) {
  */
 void hal_enable_tx(void) {
     HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port,ROBUS_DE_Pin,GPIO_PIN_SET);
+    // Sometime the TX set is too slow and the driver switch in sleep mode...
+    HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port,ROBUS_DE_Pin,GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port,ROBUS_DE_Pin,GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port,ROBUS_DE_Pin,GPIO_PIN_SET);
 }
 
 /**
