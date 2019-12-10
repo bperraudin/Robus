@@ -39,6 +39,9 @@ unsigned char reset_network_detection(vm_t* vm) {
     msg.header.cmd = RESET_DETECTION;
     msg.header.size = 0;
 
+    //we don't have any way to tell every modules to reset their detection do it twice to be sure
+    if (robus_send_sys(vm, &msg))
+        return 1;
     if (robus_send_sys(vm, &msg))
         return 1;
 

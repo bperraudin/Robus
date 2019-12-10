@@ -118,7 +118,9 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
         // wait timeout of collided packet
         wait_tx_unlock();
         // timer proportional to ID
-        for (volatile unsigned int tempo = 0; tempo < (COLLISION_TIMER * (vm->id -1)); tempo++);
+        if (vm->id > 1) {
+            for (volatile unsigned int tempo = 0; tempo < (COLLISION_TIMER * (vm->id -1)); tempo++);
+        }
     }
     // Check if ACK needed
     if (msg->header.target_mode == IDACK) {

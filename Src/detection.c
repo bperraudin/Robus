@@ -137,10 +137,14 @@ unsigned char topology_detection(vm_t* vm) {
             // Someone reply to our poke!
             // loop while the line is released
             int module_number = 0;
-            while (ctx.detection.keepline != NO_BRANCH) {
+            while ((ctx.detection.keepline != NO_BRANCH) & (module_number < 1024)) {
                 if (set_extern_id(vm, IDACK, DEFAULTID, newid++)) {
+                    // set extern id fail
+                    // remove this id and stop topology detection
+                    newid--;
                     break;
                 }
+                module_number++;
                 for (volatile unsigned int i = 0; i < (TIMERVAL * 4); i++);
             }
         }
