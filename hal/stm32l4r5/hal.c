@@ -1,12 +1,9 @@
 #include "hal.h"
 #include "reception.h"
-#include "stm32f0xx_ll_usart.h"
-#include "usart.h"
-#include "gpio.h"
-#include "stm32f0xx_hal.h"
+#include "stm32l4xx_ll_usart.h"
+#include "stm32l4xx_hal.h"
 #include "main.h"
 #include <stdio.h>
-#include "crc.h"
 #include "detection.h"
 
 volatile unsigned char* crc_ptr;
@@ -16,25 +13,28 @@ volatile unsigned char* crc_ptr;
  * \brief This function handles USART1 global interrupt / USART1 wake-up interrupt through EXTI line 25.
  *
  */
-void USART1_IRQHandler(void)
+void USART3_IRQHandler(void)
 {
 	// check if we receive a data
-	if((LL_USART_IsActiveFlag_RXNE(USART1) != RESET) && (LL_USART_IsEnabledIT_RXNE(USART1) != RESET))
+	if((LL_USART_IsActiveFlag_RXNE(USART3) != RESET) && (LL_USART_IsEnabledIT_RXNE(USART3) != RESET))
 	{
-		uint8_t data = LL_USART_ReceiveData8(USART1);
+		uint8_t data = LL_USART_ReceiveData8(USART3);
 		ctx.data_cb(&data); // send reception byte to state machine
+		//return;
 	}
 	// Check if a timeout on reception occure
-	if((LL_USART_IsActiveFlag_RTO(USART1) != RESET) && (LL_USART_IsEnabledIT_RTO(USART1) != RESET))
+	if((LL_USART_IsActiveFlag_RTO(USART3) != RESET) && (LL_USART_IsEnabledIT_RTO(USART3) != RESET))
 	{
 		if (ctx.tx_lock) {
 			timeout();
 		} else {
 			//ERROR
 		}
-		LL_USART_ClearFlag_RTO(USART1);
-		LL_USART_SetRxTimeout(USART1, TIMEOUT_VAL * (8 + 1 + 1));
+		LL_USART_ClearFlag_RTO(USART3);
+		LL_USART_SetRxTimeout(USART3, TIMEOUT_VAL * (8 + 1 + 1));
+		//return;
 	}
+	//USART3->ICR = 0xFFFF;
 }
 
 /**
@@ -62,6 +62,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
  * \return CRC value
  */
 void crc(unsigned char* data, unsigned short size, unsigned char* crc) {
+    CRC_HandleTypeDef hcrc;
+    hcrc.Instance = CRC;
+    hcrc.Init.DefaultPolynomialUse = DEFAULT_POLYNOMIAL_ENABLE;
+    hcrc.Init.DefaultInitValueUse = DEFAULT_INIT_VALUE_ENABLE;
+    hcrc.Init.InputDataInversionMode = CRC_INPUTDATA_INVERSION_NONE;
+    hcrc.Init.OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_DISABLE;
+    hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES;
     unsigned short calc;
     if (size > 1) {
         calc = (unsigned short)HAL_CRC_Calculate(&hcrc, data, size);
@@ -119,8 +126,9 @@ void reset_PTP(branch_t branch) {
 }
 
 void set_baudrate(unsigned int baudrate) {
-    LL_USART_Disable(USART1);
+    LL_USART_Disable(USART3);
     LL_USART_InitTypeDef USART_InitStruct;
+    USART_InitStruct.PrescalerValue = LL_USART_PRESCALER_DIV1;
     USART_InitStruct.BaudRate = baudrate;
     USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
     USART_InitStruct.StopBits = LL_USART_STOPBITS_1;
@@ -128,8 +136,9 @@ void set_baudrate(unsigned int baudrate) {
     USART_InitStruct.TransferDirection = LL_USART_DIRECTION_TX_RX;
     USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
     USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_16;
-    LL_USART_Init(USART1, &USART_InitStruct);
-    LL_USART_Enable(USART1);
+
+    LL_USART_Init(USART3, &USART_InitStruct);
+    LL_USART_Enable(USART3);
 }
 
 /**
@@ -139,13 +148,13 @@ void set_baudrate(unsigned int baudrate) {
 void hal_init(void) {
 	// Serial init
 	// Enable Reception interrupt
-	LL_USART_EnableIT_RXNE(USART1);
-	HAL_NVIC_EnableIRQ(USART1_IRQn);
+	LL_USART_EnableIT_RXNE(USART3);
+	HAL_NVIC_EnableIRQ(USART3_IRQn);
 	// Enable Reception timeout interrupt
 	// the timeout expressed in nb of bits duration
-	LL_USART_EnableRxTimeout(USART1);
-	LL_USART_EnableIT_RTO(USART1);
-	LL_USART_SetRxTimeout(USART1, TIMEOUT_VAL * (8 + 1 + 1));
+	LL_USART_EnableRxTimeout(USART3);
+	LL_USART_EnableIT_RTO(USART3);
+	LL_USART_SetRxTimeout(USART3, TIMEOUT_VAL * (8 + 1 + 1));
     // Setup Robus baudrate
     set_baudrate(DEFAULTBAUDRATE);
 	// Setup data direction
@@ -153,6 +162,22 @@ void hal_init(void) {
 	// Setup pull ups pins
 	HAL_GPIO_WritePin(RS485_LVL_UP_GPIO_Port,RS485_LVL_UP_Pin,GPIO_PIN_SET);
 	HAL_GPIO_WritePin(RS485_LVL_DOWN_GPIO_Port,RS485_LVL_DOWN_Pin,GPIO_PIN_RESET);
+
+    // setup crc
+	CRC_HandleTypeDef hcrc;
+    hcrc.Instance = CRC;
+    hcrc.Init.DefaultPolynomialUse = DEFAULT_POLYNOMIAL_DISABLE;
+    hcrc.Init.DefaultInitValueUse = DEFAULT_INIT_VALUE_ENABLE;
+    hcrc.Init.GeneratingPolynomial = 7;
+    hcrc.Init.CRCLength = CRC_POLYLENGTH_16B;
+    hcrc.Init.InputDataInversionMode = CRC_INPUTDATA_INVERSION_NONE;
+    hcrc.Init.OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_DISABLE;
+    hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES;
+    if (HAL_CRC_Init(&hcrc) != HAL_OK)
+    {
+    Error_Handler();
+    }
+
 
 	// Setup PTP lines
 	reset_PTP(BRANCH_A);
@@ -172,20 +197,20 @@ void hal_init(void) {
 unsigned char hal_transmit(unsigned char* data, unsigned short size) {
     ctx.collision = FALSE;
     for (unsigned short i = 0; i < size; i++) {
-        while (!LL_USART_IsActiveFlag_TXE(USART1)){
+        while (!LL_USART_IsActiveFlag_TXE(USART3)){
         }
         if (ctx.collision) {
             // There is a collision
             ctx.collision = FALSE;
             return 1;
         }
-        LL_USART_TransmitData8(USART1,*(data+i));
+        LL_USART_TransmitData8(USART3,*(data+i));
     }
     return 0;
 }
 
 void hal_wait_transmit_end(void) {
-    while(!LL_USART_IsActiveFlag_TC(USART1));
+    while(!LL_USART_IsActiveFlag_TC(USART3));
 }
 
 unsigned char get_PTP(branch_t branch) {
@@ -247,10 +272,6 @@ void hal_disable_rx(void) {
  * \return error
  */
 void hal_enable_tx(void) {
-    HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port,ROBUS_DE_Pin,GPIO_PIN_SET);
-    // Sometime the TX set is too slow and the driver switch in sleep mode...
-    HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port,ROBUS_DE_Pin,GPIO_PIN_SET);
-    HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port,ROBUS_DE_Pin,GPIO_PIN_SET);
     HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port,ROBUS_DE_Pin,GPIO_PIN_SET);
 }
 
