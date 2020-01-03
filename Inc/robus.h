@@ -53,14 +53,33 @@ vm_t* robus_module_create(unsigned char type);
 unsigned char robus_send(vm_t* vm, msg_t *msg);
 
 /**
- * \fn unsigned char robus_send_sys(vm_t* vm, msg_t *msg)
- * \brief  Send Luos management messages.
+ * \fn unsigned char robus_set_baudrate(vm_t* vm, unsigned int baudrate)
+ * \brief  setup the robus network baudrate.
  *
  * \param virtual module who send.
- * \param msg Message to send.
+ * \param baudrate baudrate value.
  *
  * \return sent or not
  */
-unsigned char robus_send_sys(vm_t* vm, msg_t *msg);
+unsigned char robus_set_baudrate(vm_t* vm, unsigned int baudrate);
+
+/**
+ * \fn unsigned short* robus_get_node_branches(unsigned char* size)
+ * \brief  get back node branches connections to other nodes.
+ *
+ * \param table branch number
+ *
+ * \return detection branches table pointers
+ */
+unsigned short* robus_get_node_branches(unsigned char* size);
+
+/**
+ * \fn unsigned char robus_topology_detection(vm_t* vm)
+ * \brief start the detection procedure
+ *
+ * \param *vm virtual module who start the detection
+ * \return return the number of detected module
+ */
+unsigned char robus_topology_detection(vm_t* vm);
 
 #endif /* _ROBUS_H_ */

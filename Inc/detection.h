@@ -11,6 +11,8 @@
 #include <robus.h>
 #include <hal.h>
 
+#define TIMERVAL 500
+
 typedef enum {
     NO_DETECT,
     MASTER_DETECT
@@ -30,10 +32,19 @@ typedef struct __attribute__((__packed__)){
     unsigned char activ_branch;
 } detection_t;
 
-unsigned char topology_detection(vm_t* vm);
 void reset_detection(void);
 unsigned char poke(branch_t branch);
 void poke_next_branch(void);
 void ptp_handler(branch_t branch);
+
+/**
+ * \fn unsigned char reset_network_detection(vm_t* vm)
+ * \brief  reset PTP state and detection state machine.
+ *
+ * \param virtual module who send.
+ *
+ * \return ok or not
+ */
+unsigned char reset_network_detection(vm_t* vm);
 
 #endif /* _DETECTION_H_ */

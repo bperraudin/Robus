@@ -128,7 +128,6 @@ static unsigned short crc_val = 0;
  * \param *data byte received from serial
  */
 void get_header(volatile unsigned char *data) {
-
     ctx.tx_lock = TRUE;
     // Catch a byte.
     CURRENTMSG.header.unmap[data_count++] = *data;

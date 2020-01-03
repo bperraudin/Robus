@@ -13,9 +13,6 @@
 #include "cmd.h"
 #include "detection.h"
 
-#define TRUE 1
-#define FALSE 0
-
 typedef void (*DATA_CB) (volatile unsigned char *data);
 
 typedef struct __attribute__((__packed__)){

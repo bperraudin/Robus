@@ -8,8 +8,6 @@
 #include "sys_msg.h"
 #include "hal.h"
 
-#define TIMERVAL 500
-
 /**
  * \fn ptp_handler(branch_t branch)
  * \brief all ptp interrupt handler
@@ -104,57 +102,6 @@ void poke_next_branch(void){
 }
 
 /**
- * \fn unsigned char topology_detection(vm_t* vm)
- * \brief start the detection procedure
- *
- * \param *vm virtual module who start the detection
- * \return return the number of detected module
- */
-unsigned char topology_detection(vm_t* vm) {
-    unsigned short newid = 1;
-    // Reset all detection state of modules on the network
-    reset_network_detection(vm);
-    ctx.detection_mode = MASTER_DETECT;
-    // wait a bit
-    for (volatile unsigned int i = 0; i < TIMERVAL; i++);
-
-    // setup sending vm
-    vm->id = newid++;
-
-    // Parse internal vm other than the sending one
-    for (unsigned char i=0; i < ctx.vm_number; i++) {
-        if (&ctx.vm_table[i] != vm) {
-            ctx.vm_table[i].id = newid++;
-        }
-    }
-
-    ctx.detection.detected_vm = ctx.vm_number;
-    ctx.detection.detection_end = TRUE;
-
-    for (unsigned char branch = 0 ; branch < NO_BRANCH; branch++) {
-        ctx.detection_mode = MASTER_DETECT;
-        if (poke(branch)) {
-            // Someone reply to our poke!
-            // loop while the line is released
-            int module_number = 0;
-            while ((ctx.detection.keepline != NO_BRANCH) & (module_number < 1024)) {
-                if (set_extern_id(vm, IDACK, DEFAULTID, newid++)) {
-                    // set extern id fail
-                    // remove this id and stop topology detection
-                    newid--;
-                    break;
-                }
-                module_number++;
-                for (volatile unsigned int i = 0; i < (TIMERVAL * 4); i++);
-            }
-        }
-    }
-    ctx.detection_mode = NO_DETECT;
-
-    return newid - 1;
-}
-
-/**
  * \fn void reset_detection(void)
  * \brief reinit the detection state machine
  *
@@ -167,4 +114,31 @@ void reset_detection(void) {
   ctx.detection_mode = NO_DETECT;
   ctx.detection.expect = POKE;
   ctx.detection.activ_branch = NO_BRANCH;
+}
+
+
+unsigned char reset_network_detection(vm_t* vm) {
+    for (unsigned char branch = 0; branch < NO_BRANCH; branch++){
+        reset_PTP(branch);
+        ctx.detection.branches[branch] = 0;
+    }
+    reset_detection();
+    msg_t msg;
+
+    msg.header.target = BROADCAST_VAL;
+    msg.header.target_mode = BROADCAST;
+    msg.header.cmd = RESET_DETECTION;
+    msg.header.size = 0;
+
+    //we don't have any way to tell every modules to reset their detection do it twice to be sure
+    if (robus_send_sys(vm, &msg))
+        return 1;
+    if (robus_send_sys(vm, &msg))
+        return 1;
+
+    // Reinit VM id
+    for (int i = 0; i< ctx.vm_number; i++) {
+        ctx.vm_table[i].id = DEFAULTID;
+    }
+    return 0;
 }
