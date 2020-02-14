@@ -135,9 +135,10 @@ unsigned char transmit(unsigned char* data, unsigned short size) {
     hal_enable_irq();
     // Enable TX
     hal_enable_tx();
-    // Try to detect a collision during the 4 first octets
+    // Try to detect a collision during the 4 first bytes
     if (hal_transmit(data, col_check_data_num)) {
         hal_disable_tx();
+        ctx.collision = FALSE;
         return 1;
     }
     // No collision occure, stop collision detection mode and continue to transmit
