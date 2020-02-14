@@ -92,6 +92,7 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
                 }
                 if (nbr_nak_retry < 10) {
                     timeout();
+                    for (volatile unsigned int tempo = 0; tempo < (COLLISION_TIMER * (nbr_nak_retry)); tempo++);
                     goto ack_restart;
                 } else {
                     // Set the dead module ID into the VM
