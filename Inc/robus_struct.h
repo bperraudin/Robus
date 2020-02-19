@@ -29,11 +29,10 @@ typedef enum {
 }target_mode_t;
 
 /**
- * \struct msg_t
- * \brief Message structure.
+ * \struct header_t
+ * \brief Header structure.
  *
- * This structure is used to receive or send messages between modules in slave
- * and master mode.
+ * This structure is used specify data and destination of datas.
  * please refer to the documentation
  */
 typedef struct __attribute__((__packed__)){
