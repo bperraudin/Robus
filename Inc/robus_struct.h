@@ -60,7 +60,7 @@ typedef struct __attribute__((__packed__)){
 typedef struct __attribute__((__packed__)){
     union {
         struct __attribute__((__packed__)){
-            header_t header;              /*!< Header filed. */
+            header_t header;                            /*!< Header filed. */
             unsigned char data[MAX_DATA_MSG_SIZE];      /*!< Data with size known. */
         };
         unsigned char stream[sizeof(header_t) + MAX_DATA_MSG_SIZE]; /*!< unmaped option. */
