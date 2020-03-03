@@ -34,7 +34,7 @@ void USART3_IRQHandler(void)
 		LL_USART_SetRxTimeout(USART3, TIMEOUT_VAL * (8 + 1 + 1));
 		//return;
 	}
-	//USART3->ICR = 0xFFFF;
+	USART3->ICR = 0xFFFF;
 }
 
 /**
@@ -149,7 +149,6 @@ void hal_init(void) {
 	// Serial init
 	// Enable Reception interrupt
 	LL_USART_EnableIT_RXNE(USART3);
-	HAL_NVIC_EnableIRQ(USART3_IRQn);
 	// Enable Reception timeout interrupt
 	// the timeout expressed in nb of bits duration
 	LL_USART_EnableRxTimeout(USART3);
@@ -178,11 +177,11 @@ void hal_init(void) {
     Error_Handler();
     }
 
-
 	// Setup PTP lines
 	reset_PTP(BRANCH_A);
 	reset_PTP(BRANCH_B);
 	reset_detection();
+    HAL_NVIC_EnableIRQ(USART3_IRQn);
 }
 
 /**
