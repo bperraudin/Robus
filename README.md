@@ -1,7 +1,7 @@
 # Robus
 Robus, the robust **RO**bot **BUS**
 
-Building robotselectronics devices is really cool but can become really complex, you will need strong knowledge in electronics design, mechanical design, and both low level and high level programming.
+Building electronics devices is really cool but can become really complex, you will need strong knowledge in electronics design, mechanical design, and both low level and high level programming.
 
 **Luos wants to simplify it.**
 
