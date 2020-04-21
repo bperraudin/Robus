@@ -74,7 +74,7 @@ void crc(unsigned char* data, unsigned short size, unsigned char* crc) {
 
 void reverse_detection(branch_t branch) {
 	GPIO_InitTypeDef GPIO_InitStruct;
-	GPIO_InitStruct.Mode=GPIO_MODE_IT_RISING;// reverse the detection edge
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING; // reverse the detection edge
 	if (branch == BRANCH_A) {
 		GPIO_InitStruct.Pin=ROBUS_PTPA_Pin;
 		HAL_GPIO_Init(ROBUS_PTPA_GPIO_Port,&GPIO_InitStruct);
@@ -91,19 +91,17 @@ void set_PTP(branch_t branch) {
 	if (branch == BRANCH_A) {
 		GPIO_InitStruct.Pin=ROBUS_PTPA_Pin;
 		HAL_GPIO_Init(ROBUS_PTPA_GPIO_Port,&GPIO_InitStruct);
-		HAL_GPIO_WritePin(ROBUS_PTPA_GPIO_Port,ROBUS_PTPA_Pin,GPIO_PIN_RESET);// Reset the PTPA pin
 	}
 	else if (branch == BRANCH_B) {
 		GPIO_InitStruct.Pin=ROBUS_PTPB_Pin;
 		HAL_GPIO_Init(ROBUS_PTPB_GPIO_Port,&GPIO_InitStruct);
-		HAL_GPIO_WritePin(ROBUS_PTPB_GPIO_Port,ROBUS_PTPB_Pin,GPIO_PIN_RESET);// Reset the PTPB pin
 	}
+        HAL_GPIO_WritePin(ROBUS_PTPA_GPIO_Port, ROBUS_PTPA_Pin, GPIO_PIN_SET); // Set the PTPA pin
+        HAL_GPIO_WritePin(ROBUS_PTPB_GPIO_Port, ROBUS_PTPB_Pin, GPIO_PIN_SET); // Set the PTPB pin
 }
 
 void reset_PTP(branch_t branch) {
 	GPIO_InitTypeDef GPIO_InitStruct;
-	GPIO_InitStruct.Mode=GPIO_MODE_IT_FALLING;
-	GPIO_InitStruct.Pull=GPIO_PULLUP;
 	if (branch == BRANCH_A) {
 		// set the PTPA pin as input pull-up IRQ triggered on falling edge event
 		__HAL_GPIO_EXTI_CLEAR_IT(ROBUS_PTPA_Pin);
@@ -116,6 +114,8 @@ void reset_PTP(branch_t branch) {
 		GPIO_InitStruct.Pin=ROBUS_PTPB_Pin;
 		HAL_GPIO_Init(ROBUS_PTPB_GPIO_Port,&GPIO_InitStruct);
 	}
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
 }
 
 void set_baudrate(unsigned int baudrate) {
@@ -191,12 +191,12 @@ void hal_wait_transmit_end(void) {
 unsigned char get_PTP(branch_t branch) {
 
 	if (branch == BRANCH_A) {
-		return (!HAL_GPIO_ReadPin(ROBUS_PTPA_GPIO_Port,ROBUS_PTPA_Pin));
 	}
 	else if (branch == BRANCH_B) {
-		return (!HAL_GPIO_ReadPin(ROBUS_PTPB_GPIO_Port,ROBUS_PTPB_Pin));
 	}
 	return 0;
+        return (HAL_GPIO_ReadPin(ROBUS_PTPA_GPIO_Port, ROBUS_PTPA_Pin));
+        return (HAL_GPIO_ReadPin(ROBUS_PTPB_GPIO_Port, ROBUS_PTPB_Pin));
 }
 
 /**

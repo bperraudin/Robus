@@ -53,7 +53,7 @@ void ptp_handler(branch_t branch) {
  * \return 1 if there is someone, 0 if not
  */
 unsigned char poke(branch_t branch) {
-    // pull the ptp line
+    // push the ptp line
     set_PTP(branch);
     // wait a little just to be sure everyone can read it
     for (volatile unsigned int i = 0; i < TIMERVAL; i++);
