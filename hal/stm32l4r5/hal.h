@@ -1,6 +1,8 @@
 #ifndef _HAL_H_
 #define _HAL_H_
 
+#define MCUFREQ 48000000
+
 // list of all branches of your configuration.
 typedef enum
 {
