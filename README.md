@@ -1,60 +1,43 @@
-# Robus
-Robus, the robust **RO**bot **BUS**
+<a href="https://luos.io"><img src="https://www.luos.io/wp-content/uploads/2020/03/Luos-color.png" alt="Luos logo" title="Luos" align="right" height="60" /></a>
 
-Building electronics devices is really cool but can become really complex, you will need strong knowledge in electronics design, mechanical design, and both low level and high level programming.
+![](https://github.com/Luos-io/Luos/workflows/Build/badge.svg)
+[![](http://certified.luos.io)](https://luos.io)
+[![](https://img.shields.io/github/license/Luos-io/Luos)](https://github.com/Luos-io/Luos/blob/master/LICENSE)
+[![](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Unleash%20electronic%20devices%20as%20microservices%20thanks%20to%20Luos&https://luos.io&via=Luos_io&hashtags=embeddedsystems,electronics,microservices,api)
+[![](https://img.shields.io/badge/LinkedIn-Share-0077B5?style=social&logo=linkedin)](https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fgithub.com%2Fluos-io)
 
-**Luos wants to simplify it.**
+# What and why Luos? :bulb:
 
-## Robus objectives
+We started designing Luos with the conviction that building electronic systems should be made easier than it is today. Most of the time should be spent on designing the applications and behaviors instead of on complex and time-and-money-eating technicalities. To give a simple example, adding a new sensor —for instance a distance sensor— to an electronic device in conception should not take more than a few minutes. So you can try, test and iterate fast on a project to truly design what users want.
 
-We want to allow you to build your own device according to your level and experience. This is made possible by Robus, our unified modular architecture dedicated to electronics.
+Luos works like [microservices architecture](https://en.wikipedia.org/wiki/Microservices) in the software world, and a [distributed operating systems](https://en.wikipedia.org/wiki/Distributed_operating_system): it encapsulates any software or hardware function to make it communicate and work with any other encapsulated module, however it was developed, either on bare metal or on top of an embedded OS.
 
-Robus reduces the time between an idea to the prototype. It provides a unified messaging achitecture for modular electronics, all modules can be connected on the same 5 wires bus containing both power and 2 communication bus. The network can self-discover module and their topology. Robus differentiating attributes are:
-- TODO
-- TODO
-- TODO
+Watch this video for additional details:
 
-TODO: Explain this better: "You can manage you device using Arduino style low level code, high level language such as python, or both to have the perfect combination between performance and mantainability."
+<a href="https://youtu.be/xQe3z0M_FE8"><img border="0" alt="Luos video" src="https://www.luos.io/wp-content/uploads/2019/11/youtube.jpeg" width="640" height="360"></a>
 
-### Connection to the outside world
+## You are not familiar with Luos operations?
 
-Robus is designed to be connected to many systems or devices. You will be able to control your device via Wifi or Bleutooth using your computer or your tablet. Robus will also be able to connect with other Robus based device or others complemetary achitectures like Lego Mindstorm or Robotis motors.
+→ Start reading the [Basics](https://docs.luos.io/pages/overview/general-basics.html) page.
 
-### Extendable
+## You want to make your own board with [Luos modules](https://docs.luos.io/pages/low/modules/create-modules.html)?
 
-If the technology you need is not already available on the Robus module list, no problem, Robus allows you to design your own by simply conforming to our API and guidelines.
+→ Start reading how to integrate Luos in you [Development environment](https://docs.luos.io/pages/low/dev-env.html).
 
-TODO: A bit more details on what we need to do
-TODO: Link to API/guidelines
+→ Then learn how to [Create a luos project](https://docs.luos.io/pages/low/modules/create-project.html).
 
-## How do I use Robus?
+## You want to shape your device behavior?
 
-> I just want to test my idea by building a functional robot quikly.
+→ Luos provides a sets of [Prototyping boards](https://docs.luos.io/pages/prototyping_boards/boards-list.html) you can use as example or to develop your project.
 
-You just need to use standard modules and one of our high level programing interfaces such as Scratch or Python.
+→ You can make your own embedded [Luos apps](https://docs.luos.io/pages/low/modules/create-modules.html).
 
-Follow [this tutorials](doc/beginners.md) to learn how.
+→ You can control your devices through a [Gate](https://docs.luos.io/pages/high/modules_list/gate.html) module using [Pyluos](https://docs.luos.io/pages/high/pyluos.html).
 
-> I want to create my robot and master each and every details of the device's behavior.
+If you have questions about a specific topic, you can refer or ask it on the [Luos' Forum](https://community.luos.io/). And if you have suggestions about this documentation don't hesitate to create pull requests.
 
-In addition to our high level programming interfaces, you will need to modify some low level embeded code in the modules. Robus allows you to create low level behavior localized on each specific module. This is vastly facilitated by the Robus messaging system freeing you from the cumbersome protocol writting process and module/service identification.
+## Don't hesitate to read [our documentation](https://docs.luos.io), or to post your questions/issues on the [Luos' Forum](https://community.luos.io). :books:
 
-Follow [this tutorial](doc/intermediates.md) to learn how.
-
-> I want to develop a new sensor or actuator, can I prototype quickly a new module.
-
-TODO: Prottyping board will be available with the chip embeded by easy access to the pins...
-
-Follow [this tutorial](doc/advanced.md) to learn how.
-
-> My needs are even more specific, I want to develop mass-produced modules.
-
-You will need to understand how Robus works and can be integrate in new electronics designs, fortunatly you will see great help in our debugging and sniffing tools.
-
-Follow [this tutorial](doc/developers.md) to learn how.
-
-## Installation
-
-On Mac you will nedd to install 2 more things :
-- `brew install coreutils`
-- `brew install crosstool-ng`
+[![](https://img.shields.io/discourse/topics?server=https%3A%2F%2Fcommunity.luos.io&logo=Discourse)](https://community.luos.io)
+[![](https://img.shields.io/badge/Luos-Documentation-34A3B4)](https://docs.luos.io)
+[![](https://img.shields.io/badge/LinkedIn-Follow%20us-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/company/luos)
