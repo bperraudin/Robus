@@ -38,6 +38,7 @@ void USART1_IRQHandler(void)
         LL_USART_ClearFlag_RTO(USART1);
         LL_USART_SetRxTimeout(USART1, TIMEOUT_VAL * (8 + 1 + 1));
     }
+    USART1->ICR = 0XFFFFFFFF;
 }
 
 /**
@@ -162,11 +163,15 @@ void hal_init(void)
     // Serial init
     // Enable Reception interrupt
     LL_USART_EnableIT_RXNE(USART1);
-    HAL_NVIC_EnableIRQ(USART1_IRQn);
     // Enable Reception timeout interrupt
     // the timeout expressed in nb of bits duration
     LL_USART_EnableRxTimeout(USART1);
     LL_USART_EnableIT_RTO(USART1);
+    //Disable others
+    LL_USART_DisableIT_TC(USART1);
+    LL_USART_DisableIT_TXE(USART1);
+    //Start USART NVIC
+    HAL_NVIC_EnableIRQ(USART1_IRQn);
     LL_USART_SetRxTimeout(USART1, TIMEOUT_VAL * (8 + 1 + 1));
     // Setup Robus baudrate
     set_baudrate(DEFAULTBAUDRATE);
