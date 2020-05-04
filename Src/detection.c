@@ -16,30 +16,38 @@
  *
  * \param branch branch id
  */
-void ptp_handler(branch_t branch) {
-    if (ctx.detection.expect == RELEASE) {
+void ptp_handler(branch_t branch)
+{
+    if (ctx.detection.expect == RELEASE)
+    {
         // the line was released
         ctx.detection.keepline = NO_BRANCH;
         ctx.detection.expect = POKE;
         // Check if every line have been poked and poke it if not
-        for (int branch = 0; branch < NO_BRANCH; branch++){
-            if (ctx.detection.branches[branch] == 0){
+        for (int branch = 0; branch < NO_BRANCH; branch++)
+        {
+            if (ctx.detection.branches[branch] == 0)
+            {
                 // this branch have not been detected
-                if (poke(branch)) {
+                if (poke(branch))
+                {
                     //we get someone, go back to let the detection continue.
                     return;
                 }
             }
         }
         // if it is finished reset all lines
-        if (ctx.detection_mode != MASTER_DETECT && ctx.detection.detection_end) {
-            for (int branch = 0; branch < NO_BRANCH; branch++) {
+        if (ctx.detection_mode != MASTER_DETECT && ctx.detection.detection_end)
+        {
+            for (int branch = 0; branch < NO_BRANCH; branch++)
+            {
                 reset_PTP(branch);
             }
             reset_detection();
         }
     }
-    else if (ctx.detection.expect == POKE) {
+    else if (ctx.detection.expect == POKE)
+    {
         // we receive a poke, pull the line to notify your presence
         set_PTP(branch);
         ctx.detection.keepline = branch;
@@ -54,16 +62,20 @@ void ptp_handler(branch_t branch) {
  * \param branch branch id
  * \return 1 if there is someone, 0 if not
  */
-unsigned char poke(branch_t branch) {
+unsigned char poke(branch_t branch)
+{
     // push the ptp line
     set_PTP(branch);
     // wait a little just to be sure everyone can read it
-    for (volatile unsigned int i = 0; i < TIMERVAL; i++);
+    for (volatile unsigned int i = 0; i < TIMERVAL; i++)
+        ;
     // release the ptp line
     reset_PTP(branch);
-    for (volatile unsigned int i = 0; i < TIMERVAL; i++);
+    for (volatile unsigned int i = 0; i < TIMERVAL; i++)
+        ;
     // read the line state
-    if (get_PTP(branch)) {
+    if (get_PTP(branch))
+    {
         // Someone reply, reverse the detection to wake up on line release
         reverse_detection(branch);
         ctx.detection.expect = RELEASE;
@@ -71,7 +83,9 @@ unsigned char poke(branch_t branch) {
         // enable activ branch to get the next ID and save it into this branch number.
         ctx.detection.activ_branch = branch;
         return 1;
-    } else {
+    }
+    else
+    {
         // Nobodies reply to our poke
         // Save branch as empty
         ctx.detection.branches[branch] = 0xFFFF;
@@ -83,20 +97,27 @@ unsigned char poke(branch_t branch) {
  * \fn void poke_next_branch(void)
  * \brief find the next branch to poke and poke it
  */
-void poke_next_branch(void){
-    for (unsigned char branch = 0; branch < NO_BRANCH; branch++) {
-        if (ctx.detection.branches[branch] == 0) {
+void poke_next_branch(void)
+{
+    for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
+    {
+        if (ctx.detection.branches[branch] == 0)
+        {
             // this branch have not been poked
-            if (poke(branch)) {
+            if (poke(branch))
+            {
                 return;
-            } else {
+            }
+            else
+            {
                 // nobody is here
                 ctx.detection.branches[branch] = 0xFFFF;
             }
         }
     }
     // no more branch need to be poked
-    for (unsigned char branch = 0; branch < NO_BRANCH; branch++) {
+    for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
+    {
         reset_PTP(branch);
     }
     reset_detection();
@@ -110,17 +131,19 @@ void poke_next_branch(void){
  * \param *vm virtual module who start the detection
  * \return return the number of detected module
  */
-void reset_detection(void) {
-  ctx.detection.keepline = NO_BRANCH;
-  ctx.detection.detected_vm = 0;
-  ctx.detection_mode = NO_DETECT;
-  ctx.detection.expect = POKE;
-  ctx.detection.activ_branch = NO_BRANCH;
+void reset_detection(void)
+{
+    ctx.detection.keepline = NO_BRANCH;
+    ctx.detection.detected_vm = 0;
+    ctx.detection_mode = NO_DETECT;
+    ctx.detection.expect = POKE;
+    ctx.detection.activ_branch = NO_BRANCH;
 }
 
-
-unsigned char reset_network_detection(vm_t* vm) {
-    for (unsigned char branch = 0; branch < NO_BRANCH; branch++){
+unsigned char reset_network_detection(vm_t *vm)
+{
+    for (unsigned char branch = 0; branch < NO_BRANCH; branch++)
+    {
         reset_PTP(branch);
         ctx.detection.branches[branch] = 0;
     }
@@ -139,7 +162,8 @@ unsigned char reset_network_detection(vm_t* vm) {
         return 1;
 
     // Reinit VM id
-    for (int i = 0; i< ctx.vm_number; i++) {
+    for (int i = 0; i < ctx.vm_number; i++)
+    {
         ctx.vm_table[i].id = DEFAULTID;
     }
     return 0;

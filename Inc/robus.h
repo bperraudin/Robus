@@ -39,7 +39,7 @@ void robus_modules_clear(void);
  * \return virtual module pointer.
  *
  */
-vm_t* robus_module_create(unsigned char type);
+vm_t *robus_module_create(unsigned char type);
 
 /**
  * \fn unsigned char robus_send(vm_t* vm, msg_t *msg)
@@ -50,7 +50,7 @@ vm_t* robus_module_create(unsigned char type);
  *
  * \return sent or not
  */
-unsigned char robus_send(vm_t* vm, msg_t *msg);
+unsigned char robus_send(vm_t *vm, msg_t *msg);
 
 /**
  * \fn unsigned char robus_set_baudrate(vm_t* vm, unsigned int baudrate)
@@ -61,7 +61,7 @@ unsigned char robus_send(vm_t* vm, msg_t *msg);
  *
  * \return sent or not
  */
-unsigned char robus_set_baudrate(vm_t* vm, unsigned int baudrate);
+unsigned char robus_set_baudrate(vm_t *vm, unsigned int baudrate);
 
 /**
  * \fn unsigned short* robus_get_node_branches(unsigned char* size)
@@ -71,7 +71,7 @@ unsigned char robus_set_baudrate(vm_t* vm, unsigned int baudrate);
  *
  * \return detection branches table pointers
  */
-unsigned short* robus_get_node_branches(unsigned char* size);
+unsigned short *robus_get_node_branches(unsigned char *size);
 
 /**
  * \fn unsigned char robus_topology_detection(vm_t* vm)
@@ -80,6 +80,6 @@ unsigned short* robus_get_node_branches(unsigned char* size);
  * \param *vm virtual module who start the detection
  * \return return the number of detected module
  */
-unsigned char robus_topology_detection(vm_t* vm);
+unsigned char robus_topology_detection(vm_t *vm);
 
 #endif /* _ROBUS_H_ */

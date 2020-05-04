@@ -5,7 +5,7 @@
  *  Author: Nicolas Rabault
  *  Abstract: protocol system message management header.
  */
- #ifndef _SYS_MSG_H_
+#ifndef _SYS_MSG_H_
 #define _SYS_MSG_H_
 
 /**
@@ -23,7 +23,7 @@ void send_ack(void);
  *
  * \return sent or not
  */
-unsigned char robus_send_sys(vm_t* vm, msg_t *msg);
+unsigned char robus_send_sys(vm_t *vm, msg_t *msg);
 
 /**
  * \fn unsigned char set_extern_id(vm_t* vm, target_mode_t target_mode, unsigned short target, unsigned short newid)
@@ -36,6 +36,6 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg);
  *
  * \return sent or not
  */
-unsigned char set_extern_id(vm_t* vm, target_mode_t target_mode, unsigned short target, unsigned short newid);
+unsigned char set_extern_id(vm_t *vm, target_mode_t target_mode, unsigned short target, unsigned short newid);
 
 #endif /* _SYS_MSG_H_ */
