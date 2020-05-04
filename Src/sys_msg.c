@@ -169,11 +169,12 @@ unsigned char transmit(unsigned char *data, unsigned short size)
     hal_disable_rx();
     hal_transmit(data + col_check_data_num, size - col_check_data_num);
     hal_wait_transmit_end();
-    // Force Usart Timeout
-    timeout();
+    // get ready to receive a ack just in case
     // disable TX and Enable RX
     hal_enable_rx();
     hal_disable_tx();
+    // Force Usart Timeout
+    timeout();
     return 0;
 }
 
