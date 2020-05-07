@@ -116,8 +116,8 @@ unsigned char robus_topology_detection(vm_t *vm)
     // Reset all detection state of modules on the network
     reset_network_detection(vm);
     ctx.detection_mode = MASTER_DETECT;
-    // wait for 10us
-    for (volatile unsigned int i = 0; i < (int)(0.00001 * MCUFREQ); i++)
+    // wait for some us
+    for (volatile unsigned int i = 0; i < (2 * TIMERVAL); i++)
         ;
 
     // setup sending vm
@@ -153,8 +153,8 @@ unsigned char robus_topology_detection(vm_t *vm)
                     break;
                 }
                 module_number++;
-                // wait for 500 us
-                for (volatile unsigned int i = 0; i < (0.0005 * MCUFREQ); i++)
+                // wait for some us
+                for (volatile unsigned int i = 0; i < (2 * TIMERVAL); i++)
                     ;
             }
         }

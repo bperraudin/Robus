@@ -11,7 +11,7 @@
 #include <robus.h>
 #include <hal.h>
 
-#define TIMERVAL 500
+#define TIMERVAL ((unsigned int)(0.00002 * MCUFREQ))
 
 typedef enum
 {

@@ -8,8 +8,6 @@
 #include "sys_msg.h"
 #include "hal.h"
 
-#define TIMERVAL 0.00001 * MCUFREQ
-
 /**
  * \fn ptp_handler(branch_t branch)
  * \brief all ptp interrupt handler
