@@ -355,6 +355,7 @@ void msg_complete(msg_t *msg)
             {
                 ctx.vm_table[i].id = DEFAULTID;
             }
+            ctx.detection.detection_end = FALSE;
             break;
         case SET_BAUDRATE:
             memcpy(&ctx.baudrate, msg->data, msg->header.size);

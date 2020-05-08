@@ -93,6 +93,7 @@ void reverse_detection(branch_t branch)
 {
     GPIO_InitTypeDef GPIO_InitStruct;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING; // reverse the detection edge
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     if (branch == BRANCH_A)
     {
         GPIO_InitStruct.Pin = ROBUS_PTPA_Pin;

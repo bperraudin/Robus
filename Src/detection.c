@@ -52,7 +52,6 @@ void ptp_handler(branch_t branch)
         // we receive a poke, pull the line to notify your presence
         set_PTP(branch);
         ctx.detection.keepline = branch;
-        ctx.detection.detection_end = 0;
     }
 }
 
