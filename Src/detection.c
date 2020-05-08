@@ -22,26 +22,29 @@ void ptp_handler(branch_t branch)
         ctx.detection.keepline = NO_BRANCH;
         ctx.detection.expect = POKE;
         // Check if every line have been poked and poke it if not
-        for (int branch = 0; branch < NO_BRANCH; branch++)
-        {
-            if (ctx.detection.branches[branch] == 0)
-            {
-                // this branch have not been detected
-                if (poke(branch))
-                {
-                    //we get someone, go back to let the detection continue.
-                    return;
-                }
-            }
-        }
-        // if it is finished reset all lines
-        if (ctx.detection_mode != MASTER_DETECT && ctx.detection.detection_end)
+        if (ctx.detection_mode != MASTER_DETECT)
         {
             for (int branch = 0; branch < NO_BRANCH; branch++)
             {
-                reset_PTP(branch);
+                if (ctx.detection.branches[branch] == 0)
+                {
+                    // this branch have not been detected
+                    if (poke(branch))
+                    {
+                        //we get someone, go back to let the detection continue.
+                        return;
+                    }
+                }
             }
-            reset_detection();
+            // if it is finished reset all lines
+            if (ctx.detection.detection_end)
+            {
+                for (int branch = 0; branch < NO_BRANCH; branch++)
+                {
+                    reset_PTP(branch);
+                }
+                reset_detection();
+            }
         }
     }
     else if (ctx.detection.expect == POKE)
