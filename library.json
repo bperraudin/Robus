@@ -2,21 +2,19 @@
     "name": "Robus",
     "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,module,ST",
     "description": "Robus is the Luos's network",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "authors": {
         "name": "Robus",
         "url": "https://luos-robotics.com"
     },
-    "build" : {
+    "build": {
         "flags": [
             "-I Inc"
         ],
         "extraScript": "select_board_script.py"
     },
-    "repository":
-    {
+    "repository": {
         "type": "git",
         "url": "https://github.com/Luos-io/robus"
     }
-
 }

@@ -11,22 +11,25 @@
 #include <robus.h>
 #include <hal.h>
 
-#define TIMERVAL 500
+#define TIMERVAL ((unsigned int)(0.00002 * MCUFREQ))
 
-typedef enum {
+typedef enum
+{
     NO_DETECT,
     MASTER_DETECT
-}detection_mode_t;
+} detection_mode_t;
 
-typedef enum {
+typedef enum
+{
     POKE,
     RELEASE
-}expected_detection_t;
+} expected_detection_t;
 
-typedef struct __attribute__((__packed__)){
-    branch_t keepline; /*!< last keepline status on PTP lines . */
+typedef struct __attribute__((__packed__))
+{
+    branch_t keepline;           /*!< last keepline status on PTP lines . */
     unsigned char detection_end; /*!< All Virtual Module have ID. */
-    unsigned char detected_vm; /*!< Virtual Module number. */
+    unsigned char detected_vm;   /*!< Virtual Module number. */
     expected_detection_t expect;
     unsigned short branches[NO_BRANCH];
     unsigned char activ_branch;
@@ -45,6 +48,6 @@ void ptp_handler(branch_t branch);
  *
  * \return ok or not
  */
-unsigned char reset_network_detection(vm_t* vm);
+unsigned char reset_network_detection(vm_t *vm);
 
 #endif /* _DETECTION_H_ */

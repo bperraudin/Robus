@@ -1,9 +1,9 @@
 #include "hal.h"
 #include "reception.h"
-#include "stm32f0xx_ll_usart.h"
+#include "stm32g4xx_ll_usart.h"
 #include "usart.h"
 #include "gpio.h"
-#include "stm32f0xx_hal.h"
+#include "stm32g4xx_hal.h"
 #include "main.h"
 #include <stdio.h>
 #include "crc.h"
@@ -38,6 +38,7 @@ void USART1_IRQHandler(void)
         LL_USART_ClearFlag_RTO(USART1);
         LL_USART_SetRxTimeout(USART1, TIMEOUT_VAL * (8 + 1 + 1));
     }
+    USART1->ICR = 0XFFFFFFFF;
 }
 
 /**
@@ -124,14 +125,14 @@ void reset_PTP(branch_t branch)
     GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     if (branch == BRANCH_A)
     {
-        // set the PTPA pin as input pull-down IRQ triggered on rising edge event
+        // set the PTPA pin as input pull-up IRQ triggered on falling edge event
         __HAL_GPIO_EXTI_CLEAR_IT(ROBUS_PTPA_Pin);
         GPIO_InitStruct.Pin = ROBUS_PTPA_Pin;
         HAL_GPIO_Init(ROBUS_PTPA_GPIO_Port, &GPIO_InitStruct);
     }
     else if (branch == BRANCH_B)
     {
-        // set the PTPB pin as input pull-down IRQ triggered on rising edge event
+        // set the PTPB pin as input pull-up IRQ triggered on falling edge event
         __HAL_GPIO_EXTI_CLEAR_IT(ROBUS_PTPB_Pin);
         GPIO_InitStruct.Pin = ROBUS_PTPB_Pin;
         HAL_GPIO_Init(ROBUS_PTPB_GPIO_Port, &GPIO_InitStruct);
@@ -142,6 +143,7 @@ void set_baudrate(unsigned int baudrate)
 {
     LL_USART_Disable(USART1);
     LL_USART_InitTypeDef USART_InitStruct;
+    USART_InitStruct.PrescalerValue = LL_USART_PRESCALER_DIV1;
     USART_InitStruct.BaudRate = baudrate;
     USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
     USART_InitStruct.StopBits = LL_USART_STOPBITS_1;
@@ -162,11 +164,15 @@ void hal_init(void)
     // Serial init
     // Enable Reception interrupt
     LL_USART_EnableIT_RXNE(USART1);
-    HAL_NVIC_EnableIRQ(USART1_IRQn);
     // Enable Reception timeout interrupt
     // the timeout expressed in nb of bits duration
     LL_USART_EnableRxTimeout(USART1);
     LL_USART_EnableIT_RTO(USART1);
+    //Disable others
+    LL_USART_DisableIT_TC(USART1);
+    LL_USART_DisableIT_TXE(USART1);
+    //Start USART NVIC
+    HAL_NVIC_EnableIRQ(USART1_IRQn);
     LL_USART_SetRxTimeout(USART1, TIMEOUT_VAL * (8 + 1 + 1));
     // Setup Robus baudrate
     set_baudrate(DEFAULTBAUDRATE);
@@ -284,9 +290,8 @@ void hal_enable_tx(void)
 {
     HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port, ROBUS_DE_Pin, GPIO_PIN_SET);
     // Sometime the TX set is too slow and the driver switch in sleep mode...
-    HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port, ROBUS_DE_Pin, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port, ROBUS_DE_Pin, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port, ROBUS_DE_Pin, GPIO_PIN_SET);
+    for (volatile unsigned int i = 0; i < 50; i++)
+        ;
 }
 
 /**

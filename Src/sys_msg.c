@@ -13,7 +13,7 @@
 #include "reception.h"
 
 void wait_tx_unlock(void);
-unsigned char transmit(unsigned char* data, unsigned short size);
+unsigned char transmit(unsigned char *data, unsigned short size);
 
 /* Specific system mesages :
  * These messages don't follow generic rules of this protocol, there are
@@ -21,7 +21,8 @@ unsigned char transmit(unsigned char* data, unsigned short size);
  * Please use it with caution
  */
 
-void send_ack(void) {
+void send_ack(void)
+{
     hal_enable_tx();
     hal_disable_rx();
     hal_transmit(&ctx.status.unmap, 1);
@@ -31,7 +32,8 @@ void send_ack(void) {
     ctx.status.unmap = 0x0F;
 }
 
-unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
+unsigned char robus_send_sys(vm_t *vm, msg_t *msg)
+{
     // Compute the full message size based on the header size info.
     unsigned short data_size = 0;
     unsigned char fail = 0;
@@ -45,17 +47,18 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
     msg->header.protocol = PROTOCOL_REVISION;
     msg->header.source = vm->id;
     // compute the CRC
-    crc(msg->stream, full_size, (volatile unsigned short*)&msg->data[data_size]);
+    crc(msg->stream, full_size, (volatile unsigned short *)&msg->data[data_size]);
     // Add the CRC to the total size of the message
     full_size += 2;
     ctx.vm_last_send = vm;
-    ack_restart :
+ack_restart:
     nbr_nak_retry++;
     hal_disable_irq();
     ctx.ack = FALSE;
     hal_enable_irq();
     // Send message
-    while (transmit((volatile unsigned char*)msg->stream, full_size)) {
+    while (transmit((volatile unsigned char *)msg->stream, full_size))
+    {
         // There is a collision
         hal_disable_irq();
         // switch reception in header mode
@@ -64,37 +67,50 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
         // wait timeout of collided packet
         wait_tx_unlock();
         // timer proportional to ID
-        if (vm->id > 1) {
-            for (volatile unsigned int tempo = 0; tempo < (COLLISION_TIMER * (vm->id -1)); tempo++);
+        if (vm->id > 1)
+        {
+            for (volatile unsigned int tempo = 0; tempo < (COLLISION_TIMER * (vm->id - 1)); tempo++)
+                ;
         }
     }
     // Check if ACK needed
-    if (msg->header.target_mode == IDACK) {
+    if (msg->header.target_mode == IDACK)
+    {
         // Check if it is a localhost message
-        if (module_concerned(&msg->header) && (msg->header.target != DEFAULTID)) {
+        if (module_concerned(&msg->header) && (msg->header.target != DEFAULTID))
+        {
             send_ack();
             ctx.ack = 0;
-        } else {
+        }
+        else
+        {
             // ACK needed, change the state of state machine for wait a ACK
             ctx.data_cb = catch_ack;
             volatile int time_out = 0;
-            while (!ctx.ack & (time_out < (60 * (1000000/ctx.baudrate)))){
+            while (!ctx.ack & (time_out < (120 * (1000000 / ctx.baudrate))))
+            {
                 time_out++;
             }
             status_t status;
             status.unmap = vm->msg_pt->ack;
-            if ((!ctx.ack) | (status.rx_error) | (status.identifier != 0xF)) {
-                if (ctx.ack && status.identifier != 0xF) {
+            if ((!ctx.ack) | (status.rx_error) | (status.identifier != 0xF))
+            {
+                if (ctx.ack && status.identifier != 0xF)
+                {
                     // This is probably a part of another message
                     // Send it to header
                     ctx.data_cb = get_header;
                     get_header(&vm->msg_pt->ack);
                 }
-                if (nbr_nak_retry < 10) {
+                if (nbr_nak_retry < 10)
+                {
                     timeout();
-                    for (volatile unsigned int tempo = 0; tempo < (COLLISION_TIMER * (nbr_nak_retry)); tempo++);
+                    for (volatile unsigned int tempo = 0; tempo < (COLLISION_TIMER * (nbr_nak_retry)); tempo++)
+                        ;
                     goto ack_restart;
-                } else {
+                }
+                else
+                {
                     // Set the dead module ID into the VM
                     vm->dead_module_spotted = msg->header.target;
                     fail = 1;
@@ -104,7 +120,8 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
         }
     }
     // localhost management
-    if (module_concerned(&msg->header)) {
+    if (module_concerned(&msg->header))
+    {
         hal_disable_irq();
         // Secure the message memory by copying it into msg buffer
         memcpy(&ctx.msg[ctx.current_buffer], msg, sizeof(header_t) + msg->header.size + 2);
@@ -112,7 +129,8 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
         msg_complete(&ctx.msg[ctx.current_buffer]);
         // Select next message buffer slot.
         ctx.current_buffer++;
-        if (ctx.current_buffer == MSG_BUFFER_SIZE) {
+        if (ctx.current_buffer == MSG_BUFFER_SIZE)
+        {
             ctx.current_buffer = 0;
         }
         flush();
@@ -123,7 +141,8 @@ unsigned char robus_send_sys(vm_t* vm, msg_t *msg) {
 
 //*********************** local functions ***************************
 
-unsigned char transmit(unsigned char* data, unsigned short size) {
+unsigned char transmit(unsigned char *data, unsigned short size)
+{
     const int col_check_data_num = 5;
     // wait tx unlock
     wait_tx_unlock();
@@ -137,7 +156,8 @@ unsigned char transmit(unsigned char* data, unsigned short size) {
     // Enable TX
     hal_enable_tx();
     // Try to detect a collision during the 4 first bytes
-    if (hal_transmit(data, col_check_data_num)) {
+    if (hal_transmit(data, col_check_data_num))
+    {
         hal_disable_tx();
         ctx.collision = FALSE;
         return 1;
@@ -147,32 +167,37 @@ unsigned char transmit(unsigned char* data, unsigned short size) {
     ctx.data_cb = get_header;
     hal_enable_irq();
     hal_disable_rx();
-    hal_transmit(data + col_check_data_num, size-col_check_data_num);
+    hal_transmit(data + col_check_data_num, size - col_check_data_num);
     hal_wait_transmit_end();
-    // Force Usart Timeout
-    timeout();
+    // get ready to receive a ack just in case
     // disable TX and Enable RX
     hal_enable_rx();
     hal_disable_tx();
+    // Force Usart Timeout
+    timeout();
     return 0;
 }
 
-void wait_tx_unlock(void) {
+void wait_tx_unlock(void)
+{
     volatile int timeout = 0;
-    while(ctx.tx_lock && (timeout < 64000)) {
+    while (ctx.tx_lock && (timeout < 64000))
+    {
         timeout++;
     }
 }
 
-unsigned char set_extern_id(vm_t* vm, target_mode_t target_mode, unsigned short target, unsigned short newid) {
+unsigned char set_extern_id(vm_t *vm, target_mode_t target_mode, unsigned short target, unsigned short newid)
+{
     msg_t msg;
     msg.header.target = target;
     msg.header.target_mode = target_mode;
     msg.header.cmd = WRITE_ID;
     msg.header.size = 2;
     msg.data[1] = newid;
-    msg.data[0] = (newid <<8);
-    if (robus_send_sys(vm, &msg)){
+    msg.data[0] = (newid << 8);
+    if (robus_send_sys(vm, &msg))
+    {
         return 1;
     }
     return 0;

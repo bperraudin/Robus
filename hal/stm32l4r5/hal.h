@@ -1,19 +1,22 @@
 #ifndef _HAL_H_
 #define _HAL_H_
 
- // list of all branches of your configuration.
-typedef enum {
+#define MCUFREQ 48000000
+
+// list of all branches of your configuration.
+typedef enum
+{
     BRANCH_A,
     BRANCH_B,
     NO_BRANCH // you have to keep this one at the last position
-}branch_t;
+} branch_t;
 
 #include "context.h"
 
-void crc(unsigned char* data, unsigned short size, unsigned char* crc);
+void crc(unsigned char *data, unsigned short size, unsigned char *crc);
 void hal_init(void);
 void set_baudrate(unsigned int baudrate);
-unsigned char hal_transmit(unsigned char* data, unsigned short size);
+unsigned char hal_transmit(unsigned char *data, unsigned short size);
 void send_poke(branch_t branch);
 void hal_delay_ms(int factor);
 void hal_disable_irq(void);

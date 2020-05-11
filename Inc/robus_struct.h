@@ -20,13 +20,14 @@
  *
  * This structure is used to get the message addressing mode list.
  */
-typedef enum {
+typedef enum
+{
     ID,        /*!< Unique or virtual ID, used to send something to only one module. */
     IDACK,     /*!< Unique or virtual ID with reception Acknoledgment (ACK). */
     TYPE,      /*!< Type mode, used to send something to all module of the same type. */
     BROADCAST, /*!< Broadcast mode, used to send something to everybody. */
     MULTICAST  /*!< Multicast mode, used to send something to multiple modules. */
-}target_mode_t;
+} target_mode_t;
 
 /**
  * \struct header_t
@@ -35,19 +36,21 @@ typedef enum {
  * This structure is used specify data and destination of datas.
  * please refer to the documentation
  */
-typedef struct __attribute__((__packed__)){
+typedef struct __attribute__((__packed__))
+{
     union {
-        struct __attribute__((__packed__)){
-            unsigned short protocol : 4;       /*!< Protocol version. */
-            unsigned short target : 12;        /*!< Target address, it can be (ID, Multicast/Broadcast, Type). */
-            unsigned short target_mode : 4;    /*!< Select targeting mode (ID, ID+ACK, Multicast/Broadcast, Type). */
-            unsigned short source : 12;        /*!< Source address, it can be (ID, Multicast/Broadcast, Type). */
-            unsigned char cmd;                 /*!< msg definition. */
-            unsigned short size;                /*!< Size of the data field. */
+        struct __attribute__((__packed__))
+        {
+            unsigned short protocol : 4;    /*!< Protocol version. */
+            unsigned short target : 12;     /*!< Target address, it can be (ID, Multicast/Broadcast, Type). */
+            unsigned short target_mode : 4; /*!< Select targeting mode (ID, ID+ACK, Multicast/Broadcast, Type). */
+            unsigned short source : 12;     /*!< Source address, it can be (ID, Multicast/Broadcast, Type). */
+            unsigned char cmd;              /*!< msg definition. */
+            unsigned short size;            /*!< Size of the data field. */
         };
-        unsigned char unmap[7];                /*!< Unmaped form. */
+        unsigned char unmap[7]; /*!< Unmaped form. */
     };
-}header_t;
+} header_t;
 
 /**
  * \struct msg_t
@@ -57,11 +60,13 @@ typedef struct __attribute__((__packed__)){
  * and master mode.
  * please refer to the documentation
  */
-typedef struct __attribute__((__packed__)){
+typedef struct __attribute__((__packed__))
+{
     union {
-        struct __attribute__((__packed__)){
-            header_t header;                            /*!< Header filed. */
-            unsigned char data[MAX_DATA_MSG_SIZE];      /*!< Data with size known. */
+        struct __attribute__((__packed__))
+        {
+            header_t header;                       /*!< Header filed. */
+            unsigned char data[MAX_DATA_MSG_SIZE]; /*!< Data with size known. */
         };
         unsigned char stream[sizeof(header_t) + MAX_DATA_MSG_SIZE]; /*!< unmaped option. */
     };
@@ -69,7 +74,7 @@ typedef struct __attribute__((__packed__)){
         unsigned short crc;
         volatile unsigned char ack;
     };
-}msg_t;
+} msg_t;
 
 /**
  * \struct vm_t
@@ -78,19 +83,20 @@ typedef struct __attribute__((__packed__)){
  * This structure is used to manage virtual modules
  * please refer to the documentation
  */
-typedef struct __attribute__((__packed__)) vm_t{
+typedef struct __attribute__((__packed__)) vm_t
+{
 
     // Module infomations
-    unsigned short id;                  /*!< Module ID. */
-    unsigned char type;                 /*!< Module type. */
+    unsigned short id;  /*!< Module ID. */
+    unsigned char type; /*!< Module type. */
 
     // Variables
-    msg_t* msg_pt;                                               /*!< Message pointer. */
+    msg_t *msg_pt;                                               /*!< Message pointer. */
     unsigned char max_multicast_target;                          /*!< Position pointer of the last multicast target. */
     unsigned short multicast_target_bank[MAX_MULTICAST_ADDRESS]; /*!< multicast target bank. */
     unsigned short dead_module_spotted;                          /*!< The ID of a module that don't reply to a lot of ACK msg */
-}vm_t;
+} vm_t;
 
-typedef void (*RX_CB) (vm_t* vm, msg_t *msg);
+typedef void (*RX_CB)(vm_t *vm, msg_t *msg);
 
 #endif /* _ROBUS_STRUCT_H_ */

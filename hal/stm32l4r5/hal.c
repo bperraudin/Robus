@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include "detection.h"
 
-volatile unsigned char* crc_ptr;
+volatile unsigned char *crc_ptr;
 
 /**
  * \fn void USART1_IRQHandler(void)
@@ -15,41 +15,47 @@ volatile unsigned char* crc_ptr;
  */
 void USART3_IRQHandler(void)
 {
-	// check if we receive a data
-	if((LL_USART_IsActiveFlag_RXNE(USART3) != RESET) && (LL_USART_IsEnabledIT_RXNE(USART3) != RESET))
-	{
-		uint8_t data = LL_USART_ReceiveData8(USART3);
-		ctx.data_cb(&data); // send reception byte to state machine
-		//return;
-	}
-	// Check if a timeout on reception occure
-	if((LL_USART_IsActiveFlag_RTO(USART3) != RESET) && (LL_USART_IsEnabledIT_RTO(USART3) != RESET))
-	{
-		if (ctx.tx_lock) {
-			timeout();
-		} else {
-			//ERROR
-		}
-		LL_USART_ClearFlag_RTO(USART3);
-		LL_USART_SetRxTimeout(USART3, TIMEOUT_VAL * (8 + 1 + 1));
-		//return;
-	}
-	USART3->ICR = 0xFFFF;
+    // check if we receive a data
+    if ((LL_USART_IsActiveFlag_RXNE(USART3) != RESET) && (LL_USART_IsEnabledIT_RXNE(USART3) != RESET))
+    {
+        uint8_t data = LL_USART_ReceiveData8(USART3);
+        ctx.data_cb(&data); // send reception byte to state machine
+                            //return;
+    }
+    // Check if a timeout on reception occure
+    if ((LL_USART_IsActiveFlag_RTO(USART3) != RESET) && (LL_USART_IsEnabledIT_RTO(USART3) != RESET))
+    {
+        if (ctx.tx_lock)
+        {
+            timeout();
+        }
+        else
+        {
+            //ERROR
+        }
+        LL_USART_ClearFlag_RTO(USART3);
+        LL_USART_SetRxTimeout(USART3, TIMEOUT_VAL * (8 + 1 + 1));
+        //return;
+    }
+    USART3->ICR = 0xFFFF;
 }
 
 /**
  * \fn HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
  * \brief PTP interrupt management
  */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-    if(GPIO_Pin==ROBUS_PTPA_Pin){
-		ptp_handler(BRANCH_A);
-		return;
-	}
-	if(GPIO_Pin==ROBUS_PTPB_Pin){
-		ptp_handler(BRANCH_B);
-		return;
-	}
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if (GPIO_Pin == ROBUS_PTPA_Pin)
+    {
+        ptp_handler(BRANCH_A);
+        return;
+    }
+    if (GPIO_Pin == ROBUS_PTPB_Pin)
+    {
+        ptp_handler(BRANCH_B);
+        return;
+    }
 }
 
 /**
@@ -61,7 +67,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
  *
  * \return CRC value
  */
-void crc(unsigned char* data, unsigned short size, unsigned char* crc) {
+void crc(unsigned char *data, unsigned short size, unsigned char *crc)
+{
     CRC_HandleTypeDef hcrc;
     hcrc.Instance = CRC;
     hcrc.Init.DefaultPolynomialUse = DEFAULT_POLYNOMIAL_ENABLE;
@@ -70,62 +77,76 @@ void crc(unsigned char* data, unsigned short size, unsigned char* crc) {
     hcrc.Init.OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_DISABLE;
     hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES;
     unsigned short calc;
-    if (size > 1) {
+    if (size > 1)
+    {
         calc = (unsigned short)HAL_CRC_Calculate(&hcrc, data, size);
-    } else {
+    }
+    else
+    {
         calc = (unsigned short)HAL_CRC_Accumulate(&hcrc, data, 1);
     }
     crc[0] = (unsigned char)calc;
     crc[1] = (unsigned char)(calc >> 8);
 }
 
-void reverse_detection(branch_t branch) {
-	GPIO_InitTypeDef GPIO_InitStruct;
-	GPIO_InitStruct.Mode=GPIO_MODE_IT_RISING;// reverse the detection edge
-	if (branch == BRANCH_A) {
-		GPIO_InitStruct.Pin=ROBUS_PTPA_Pin;
-		HAL_GPIO_Init(ROBUS_PTPA_GPIO_Port,&GPIO_InitStruct);
-	}
-	else if (branch == BRANCH_B) {
-		GPIO_InitStruct.Pin=ROBUS_PTPB_Pin;
-		HAL_GPIO_Init(ROBUS_PTPB_GPIO_Port,&GPIO_InitStruct);
-	}
+void reverse_detection(branch_t branch)
+{
+    GPIO_InitTypeDef GPIO_InitStruct;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING; // reverse the detection edge
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    if (branch == BRANCH_A)
+    {
+        GPIO_InitStruct.Pin = ROBUS_PTPA_Pin;
+        HAL_GPIO_Init(ROBUS_PTPA_GPIO_Port, &GPIO_InitStruct);
+    }
+    else if (branch == BRANCH_B)
+    {
+        GPIO_InitStruct.Pin = ROBUS_PTPB_Pin;
+        HAL_GPIO_Init(ROBUS_PTPB_GPIO_Port, &GPIO_InitStruct);
+    }
 }
 
-void set_PTP(branch_t branch) {
-	GPIO_InitTypeDef GPIO_InitStruct;
-	GPIO_InitStruct.Mode=GPIO_MODE_OUTPUT_PP;// Clean edge/state detection and set the PTP pin as output
-	if (branch == BRANCH_A) {
-		GPIO_InitStruct.Pin=ROBUS_PTPA_Pin;
-		HAL_GPIO_Init(ROBUS_PTPA_GPIO_Port,&GPIO_InitStruct);
-		HAL_GPIO_WritePin(ROBUS_PTPA_GPIO_Port,ROBUS_PTPA_Pin,GPIO_PIN_RESET);// Reset the PTPA pin
-	}
-	else if (branch == BRANCH_B) {
-		GPIO_InitStruct.Pin=ROBUS_PTPB_Pin;
-		HAL_GPIO_Init(ROBUS_PTPB_GPIO_Port,&GPIO_InitStruct);
-		HAL_GPIO_WritePin(ROBUS_PTPB_GPIO_Port,ROBUS_PTPB_Pin,GPIO_PIN_RESET);// Reset the PTPB pin
-	}
+void set_PTP(branch_t branch)
+{
+    GPIO_InitTypeDef GPIO_InitStruct;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP; // Clean edge/state detection and set the PTP pin as output
+    if (branch == BRANCH_A)
+    {
+        GPIO_InitStruct.Pin = ROBUS_PTPA_Pin;
+        HAL_GPIO_Init(ROBUS_PTPA_GPIO_Port, &GPIO_InitStruct);
+        HAL_GPIO_WritePin(ROBUS_PTPA_GPIO_Port, ROBUS_PTPA_Pin, GPIO_PIN_SET); // Reset the PTPA pin
+    }
+    else if (branch == BRANCH_B)
+    {
+        GPIO_InitStruct.Pin = ROBUS_PTPB_Pin;
+        HAL_GPIO_Init(ROBUS_PTPB_GPIO_Port, &GPIO_InitStruct);
+        HAL_GPIO_WritePin(ROBUS_PTPB_GPIO_Port, ROBUS_PTPB_Pin, GPIO_PIN_SET); // Reset the PTPB pin
+    }
 }
 
-void reset_PTP(branch_t branch) {
-	GPIO_InitTypeDef GPIO_InitStruct;
-	GPIO_InitStruct.Mode=GPIO_MODE_IT_FALLING;
-	GPIO_InitStruct.Pull=GPIO_PULLUP;
-	if (branch == BRANCH_A) {
-		// set the PTPA pin as input pull-up IRQ triggered on falling edge event
-		__HAL_GPIO_EXTI_CLEAR_IT(ROBUS_PTPA_Pin);
-		GPIO_InitStruct.Pin=ROBUS_PTPA_Pin;
-		HAL_GPIO_Init(ROBUS_PTPA_GPIO_Port,&GPIO_InitStruct);
-	}
-	else if (branch == BRANCH_B) {
-		// set the PTPB pin as input pull-up IRQ triggered on falling edge event
-		__HAL_GPIO_EXTI_CLEAR_IT(ROBUS_PTPB_Pin);
-		GPIO_InitStruct.Pin=ROBUS_PTPB_Pin;
-		HAL_GPIO_Init(ROBUS_PTPB_GPIO_Port,&GPIO_InitStruct);
-	}
+void reset_PTP(branch_t branch)
+{
+    GPIO_InitTypeDef GPIO_InitStruct;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    if (branch == BRANCH_A)
+    {
+        // set the PTPA pin as input pull-up IRQ triggered on falling edge event
+        __HAL_GPIO_EXTI_CLEAR_IT(ROBUS_PTPA_Pin);
+        GPIO_InitStruct.Pin = ROBUS_PTPA_Pin;
+        HAL_GPIO_Init(ROBUS_PTPA_GPIO_Port, &GPIO_InitStruct);
+    }
+    else if (branch == BRANCH_B)
+    {
+        // set the PTPB pin as input pull-up IRQ triggered on falling edge event
+        __HAL_GPIO_EXTI_CLEAR_IT(ROBUS_PTPB_Pin);
+        GPIO_InitStruct.Pin = ROBUS_PTPB_Pin;
+        HAL_GPIO_Init(ROBUS_PTPB_GPIO_Port, &GPIO_InitStruct);
+    }
 }
 
-void set_baudrate(unsigned int baudrate) {
+void set_baudrate(unsigned int baudrate)
+{
     LL_USART_Disable(USART3);
     LL_USART_InitTypeDef USART_InitStruct;
     USART_InitStruct.PrescalerValue = LL_USART_PRESCALER_DIV1;
@@ -145,25 +166,26 @@ void set_baudrate(unsigned int baudrate) {
  * \fn void hal_init(void)
  * \brief hardware configuration (clock, communication, DMA...)
  */
-void hal_init(void) {
-	// Serial init
-	// Enable Reception interrupt
-	LL_USART_EnableIT_RXNE(USART3);
-	// Enable Reception timeout interrupt
-	// the timeout expressed in nb of bits duration
-	LL_USART_EnableRxTimeout(USART3);
-	LL_USART_EnableIT_RTO(USART3);
-	LL_USART_SetRxTimeout(USART3, TIMEOUT_VAL * (8 + 1 + 1));
+void hal_init(void)
+{
+    // Serial init
+    // Enable Reception interrupt
+    LL_USART_EnableIT_RXNE(USART3);
+    // Enable Reception timeout interrupt
+    // the timeout expressed in nb of bits duration
+    LL_USART_EnableRxTimeout(USART3);
+    LL_USART_EnableIT_RTO(USART3);
+    LL_USART_SetRxTimeout(USART3, TIMEOUT_VAL * (8 + 1 + 1));
     // Setup Robus baudrate
     set_baudrate(DEFAULTBAUDRATE);
-	// Setup data direction
-	HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port,ROBUS_DE_Pin,GPIO_PIN_RESET); 	// Disable emitter | Enable Receiver only - Hardware DE impossible
-	// Setup pull ups pins
-	HAL_GPIO_WritePin(RS485_LVL_UP_GPIO_Port,RS485_LVL_UP_Pin,GPIO_PIN_SET);
-	HAL_GPIO_WritePin(RS485_LVL_DOWN_GPIO_Port,RS485_LVL_DOWN_Pin,GPIO_PIN_RESET);
+    // Setup data direction
+    HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port, ROBUS_DE_Pin, GPIO_PIN_RESET); // Disable emitter | Enable Receiver only - Hardware DE impossible
+    // Setup pull ups pins
+    HAL_GPIO_WritePin(RS485_LVL_UP_GPIO_Port, RS485_LVL_UP_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(RS485_LVL_DOWN_GPIO_Port, RS485_LVL_DOWN_Pin, GPIO_PIN_RESET);
 
     // setup crc
-	CRC_HandleTypeDef hcrc;
+    CRC_HandleTypeDef hcrc;
     hcrc.Instance = CRC;
     hcrc.Init.DefaultPolynomialUse = DEFAULT_POLYNOMIAL_DISABLE;
     hcrc.Init.DefaultInitValueUse = DEFAULT_INIT_VALUE_ENABLE;
@@ -174,13 +196,13 @@ void hal_init(void) {
     hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES;
     if (HAL_CRC_Init(&hcrc) != HAL_OK)
     {
-    Error_Handler();
+        Error_Handler();
     }
 
-	// Setup PTP lines
-	reset_PTP(BRANCH_A);
-	reset_PTP(BRANCH_B);
-	reset_detection();
+    // Setup PTP lines
+    reset_PTP(BRANCH_A);
+    reset_PTP(BRANCH_B);
+    reset_detection();
     HAL_NVIC_EnableIRQ(USART3_IRQn);
 }
 
@@ -193,34 +215,43 @@ void hal_init(void) {
  *
  * \return error
  */
-unsigned char hal_transmit(unsigned char* data, unsigned short size) {
+unsigned char hal_transmit(unsigned char *data, unsigned short size)
+{
     ctx.collision = FALSE;
-    for (unsigned short i = 0; i < size; i++) {
-        while (!LL_USART_IsActiveFlag_TXE(USART3)){
+    for (unsigned short i = 0; i < size; i++)
+    {
+        while (!LL_USART_IsActiveFlag_TXE(USART3))
+        {
         }
-        if (ctx.collision) {
+        if (ctx.collision)
+        {
             // There is a collision
             ctx.collision = FALSE;
             return 1;
         }
-        LL_USART_TransmitData8(USART3,*(data+i));
+        LL_USART_TransmitData8(USART3, *(data + i));
     }
     return 0;
 }
 
-void hal_wait_transmit_end(void) {
-    while(!LL_USART_IsActiveFlag_TC(USART3));
+void hal_wait_transmit_end(void)
+{
+    while (!LL_USART_IsActiveFlag_TC(USART3))
+        ;
 }
 
-unsigned char get_PTP(branch_t branch) {
+unsigned char get_PTP(branch_t branch)
+{
 
-	if (branch == BRANCH_A) {
-		return (!HAL_GPIO_ReadPin(ROBUS_PTPA_GPIO_Port,ROBUS_PTPA_Pin));
-	}
-	else if (branch == BRANCH_B) {
-		return (!HAL_GPIO_ReadPin(ROBUS_PTPB_GPIO_Port,ROBUS_PTPB_Pin));
-	}
-	return 0;
+    if (branch == BRANCH_A)
+    {
+        return (HAL_GPIO_ReadPin(ROBUS_PTPA_GPIO_Port, ROBUS_PTPA_Pin));
+    }
+    else if (branch == BRANCH_B)
+    {
+        return (HAL_GPIO_ReadPin(ROBUS_PTPB_GPIO_Port, ROBUS_PTPB_Pin));
+    }
+    return 0;
 }
 
 /**
@@ -229,7 +260,8 @@ unsigned char get_PTP(branch_t branch) {
  *
  * \return error
  */
-void hal_disable_irq(void) {
+void hal_disable_irq(void)
+{
     __disable_irq();
 }
 
@@ -239,10 +271,10 @@ void hal_disable_irq(void) {
  *
  * \return error
  */
-void hal_enable_irq(void) {
+void hal_enable_irq(void)
+{
     __enable_irq();
 }
-
 
 /**
  * \fn void hal_enable_rx(void)
@@ -250,8 +282,9 @@ void hal_enable_irq(void) {
  *
  * \return error
  */
-void hal_enable_rx(void) {
-    HAL_GPIO_WritePin(ROBUS_RE_GPIO_Port,ROBUS_RE_Pin,GPIO_PIN_RESET);
+void hal_enable_rx(void)
+{
+    HAL_GPIO_WritePin(ROBUS_RE_GPIO_Port, ROBUS_RE_Pin, GPIO_PIN_RESET);
 }
 
 /**
@@ -260,8 +293,9 @@ void hal_enable_rx(void) {
  *
  * \return error
  */
-void hal_disable_rx(void) {
-    HAL_GPIO_WritePin(ROBUS_RE_GPIO_Port,ROBUS_RE_Pin,GPIO_PIN_SET);
+void hal_disable_rx(void)
+{
+    HAL_GPIO_WritePin(ROBUS_RE_GPIO_Port, ROBUS_RE_Pin, GPIO_PIN_SET);
 }
 
 /**
@@ -270,8 +304,9 @@ void hal_disable_rx(void) {
  *
  * \return error
  */
-void hal_enable_tx(void) {
-    HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port,ROBUS_DE_Pin,GPIO_PIN_SET);
+void hal_enable_tx(void)
+{
+    HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port, ROBUS_DE_Pin, GPIO_PIN_SET);
 }
 
 /**
@@ -280,6 +315,7 @@ void hal_enable_tx(void) {
  *
  * \return error
  */
-void hal_disable_tx(void) {
-    HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port,ROBUS_DE_Pin,GPIO_PIN_RESET);
+void hal_disable_tx(void)
+{
+    HAL_GPIO_WritePin(ROBUS_DE_GPIO_Port, ROBUS_DE_Pin, GPIO_PIN_RESET);
 }
