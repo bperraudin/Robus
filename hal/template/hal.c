@@ -4,7 +4,8 @@
  * \fn void hal_init(void)
  * \brief hardware configuration (clock, communication, DMA...)
  */
-void hal_init(void) {
+void hal_init(void)
+{
     // init all things
 }
 
@@ -17,10 +18,14 @@ void hal_init(void) {
  *
  * \return error
  */
-unsigned char hal_transmit(unsigned char* data, unsigned short size) {
-    if /*hardware ready*/ {
+unsigned char hal_transmit(unsigned char *data, unsigned short size)
+{
+    if /*hardware ready*/
+    {
         // Put data into a DMA => serial interface or do it with a for
-    } else {
+    }
+    else
+    {
         ctx.status.master_write = TRUE;
         return 1;
     }
