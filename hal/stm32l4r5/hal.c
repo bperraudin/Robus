@@ -217,7 +217,6 @@ void hal_init(void)
  */
 unsigned char hal_transmit(unsigned char *data, unsigned short size)
 {
-    ctx.collision = FALSE;
     for (unsigned short i = 0; i < size; i++)
     {
         while (!LL_USART_IsActiveFlag_TXE(USART3))

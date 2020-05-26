@@ -146,16 +146,24 @@ unsigned char transmit(unsigned char *data, unsigned short size)
     const int col_check_data_num = 5;
     // wait tx unlock
     wait_tx_unlock();
+    ctx.collision = FALSE;
+    // Enable TX
+    hal_enable_tx();
     hal_disable_irq();
-    // re-lock the transmission
-    ctx.tx_lock = TRUE;
     // switch reception in collision detection mode
     ctx.data_cb = get_collision;
     ctx.tx_data = data;
     hal_enable_irq();
-    // Enable TX
-    hal_enable_tx();
-    // Try to detect a collision during the 4 first bytes
+    // re-lock the transmission
+    ctx.tx_lock = TRUE;
+    if (ctx.collision)
+    {
+        // We receive something during our configuration, stop this transmission
+        hal_disable_tx();
+        ctx.collision = FALSE;
+        return 1;
+    }
+    // Try to detect a collision during the "col_check_data_num" first bytes
     if (hal_transmit(data, col_check_data_num))
     {
         hal_disable_tx();

@@ -252,13 +252,13 @@ void get_data(volatile unsigned char *data)
  */
 void get_collision(volatile unsigned char *data)
 {
-    if (*ctx.tx_data != *data)
+    if ((*ctx.tx_data != *data) || (!ctx.tx_lock))
     {
-        //data dont match, there is a collision
+        //data dont match, or we don't start to send, there is a collision
         ctx.collision = TRUE;
         //Stop TX trying to save input datas
         hal_disable_tx();
-        // send this data to header manager. This data should be good
+        // send all received datas
         get_header(data);
     }
     ctx.tx_data = ctx.tx_data + 1;
