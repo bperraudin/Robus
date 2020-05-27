@@ -2,7 +2,7 @@
     "name": "Robus",
     "keywords": "robus,network,microservice,luos,operating system,os,embedded,communication,module,ST",
     "description": "Robus is the Luos's network",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "authors": {
         "name": "Robus",
         "url": "https://luos-robotics.com"
@@ -10,7 +10,7 @@
     "build": {
         "flags": [
             "-I Inc",
-            "-DVERSION=1.1.0"
+            "-DVERSION=1.2.0"
         ],
         "extraScript": "select_board_script.py"
     },
