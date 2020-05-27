@@ -9,7 +9,8 @@
     },
     "build": {
         "flags": [
-            "-I Inc"
+            "-I Inc",
+            "-DVERSION=1.1.0"
         ],
         "extraScript": "select_board_script.py"
     },

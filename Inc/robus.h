@@ -82,4 +82,6 @@ unsigned short *robus_get_node_branches(unsigned char *size);
  */
 unsigned char robus_topology_detection(vm_t *vm);
 
+const extern char ROBUS_VERSION[20];
+
 #endif /* _ROBUS_H_ */

@@ -14,6 +14,15 @@
 #include "hal.h"
 #include "cmd.h"
 
+#define STRINGIFY(s) STRINGIFY1(s)
+#define STRINGIFY1(s) #s
+
+#ifdef VERSION
+const char ROBUS_VERSION[20] = STRINGIFY(VERSION);
+#else
+#error missing version robus definition
+#endif
+
 // Creation of the robus context. This variable is used in all files of this lib.
 volatile context_t ctx;
 
