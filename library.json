@@ -4,8 +4,8 @@
     "description": "Robus is the Luos's network",
     "version": "1.2.0",
     "authors": {
-        "name": "Robus",
-        "url": "https://luos-robotics.com"
+        "name": "Luos",
+        "url": "https://luos.io"
     },
     "build": {
         "flags": [
