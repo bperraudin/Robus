@@ -73,11 +73,11 @@ void crc(unsigned char *data, unsigned short size, unsigned char *crc)
     unsigned short calc;
     if (size > 1)
     {
-        calc = (unsigned short)HAL_CRC_Calculate(&hcrc, data, size);
+        calc = (unsigned short)HAL_CRC_Calculate(&hcrc, (void *)data, size);
     }
     else
     {
-        calc = (unsigned short)HAL_CRC_Accumulate(&hcrc, data, 1);
+        calc = (unsigned short)HAL_CRC_Accumulate(&hcrc, (void *)data, 1);
     }
     crc[0] = (unsigned char)calc;
     crc[1] = (unsigned char)(calc >> 8);

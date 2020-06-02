@@ -25,7 +25,7 @@ void send_ack(void)
 {
     hal_enable_tx();
     hal_disable_rx();
-    hal_transmit(&ctx.status.unmap, 1);
+    hal_transmit((unsigned char *)&ctx.status.unmap, 1);
     hal_wait_transmit_end();
     hal_enable_rx();
     hal_disable_tx();
@@ -47,7 +47,7 @@ unsigned char robus_send_sys(vm_t *vm, msg_t *msg)
     msg->header.protocol = PROTOCOL_REVISION;
     msg->header.source = vm->id;
     // compute the CRC
-    crc(msg->stream, full_size, (volatile unsigned short *)&msg->data[data_size]);
+    crc(msg->stream, full_size, (unsigned char *)&msg->data[data_size]);
     // Add the CRC to the total size of the message
     full_size += 2;
     ctx.vm_last_send = vm;
@@ -57,7 +57,7 @@ ack_restart:
     ctx.ack = FALSE;
     hal_enable_irq();
     // Send message
-    while (transmit((volatile unsigned char *)msg->stream, full_size))
+    while (transmit((unsigned char *)msg->stream, full_size))
     {
         // There is a collision
         hal_disable_irq();
@@ -124,9 +124,9 @@ ack_restart:
     {
         hal_disable_irq();
         // Secure the message memory by copying it into msg buffer
-        memcpy(&ctx.msg[ctx.current_buffer], msg, sizeof(header_t) + msg->header.size + 2);
+        memcpy((void *)&ctx.msg[ctx.current_buffer], msg, sizeof(header_t) + msg->header.size + 2);
         // Manage this message
-        msg_complete(&ctx.msg[ctx.current_buffer]);
+        msg_complete((msg_t *)&ctx.msg[ctx.current_buffer]);
         // Select next message buffer slot.
         ctx.current_buffer++;
         if (ctx.current_buffer == MSG_BUFFER_SIZE)

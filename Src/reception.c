@@ -89,7 +89,7 @@ unsigned char module_concerned(header_t *header)
     case MULTICAST:
         for (int i = 0; i < ctx.vm_number; i++)
         {
-            if (multicast_target_bank(&ctx.vm_table[i], header->target))
+            if (multicast_target_bank((vm_t *)&ctx.vm_table[i], header->target))
             { //TODO manage multiple slave concerned
                 concerned = TRUE;
                 concernedmodules[i] = TRUE;
@@ -171,11 +171,11 @@ void get_header(volatile unsigned char *data)
         // Reset the msg allocation
         ctx.alloc_msg[ctx.current_buffer] = 0;
 
-        keep = module_concerned(&CURRENTMSG.header);
+        keep = module_concerned((header_t *)&CURRENTMSG.header);
         if (keep)
         {
             // start crc computation
-            crc(CURRENTMSG.stream, sizeof(header_t), (unsigned char *)&crc_val);
+            crc((unsigned char *)CURRENTMSG.stream, sizeof(header_t), (unsigned char *)&crc_val);
         }
     }
 }
@@ -192,7 +192,7 @@ void get_data(volatile unsigned char *data)
     if ((data_count < data_size) && keep)
     {
         // Continue CRC computation until the end of data
-        crc(&CURRENTMSG.data[data_count], 1, (unsigned char *)&crc_val);
+        crc((unsigned char *)&CURRENTMSG.data[data_count], 1, (unsigned char *)&crc_val);
     }
     if (data_count > data_size)
     {
@@ -209,7 +209,7 @@ void get_data(volatile unsigned char *data)
                 ctx.data_cb = get_header;
                 if (CURRENTMSG.header.target_mode == ID || CURRENTMSG.header.target_mode == IDACK)
                 {
-                    msg_complete(&CURRENTMSG);
+                    msg_complete((msg_t *)&CURRENTMSG);
                 }
                 else
                 {
@@ -218,7 +218,7 @@ void get_data(volatile unsigned char *data)
                         if (concernedmodules[i])
                         {
                             ctx.alloc_msg[ctx.current_buffer] = i;
-                            msg_complete(&CURRENTMSG);
+                            msg_complete((msg_t *)&CURRENTMSG);
                             concernedmodules[i] = FALSE;
                         }
                     }
@@ -358,14 +358,14 @@ void msg_complete(msg_t *msg)
             ctx.detection.detection_end = FALSE;
             break;
         case SET_BAUDRATE:
-            memcpy(&ctx.baudrate, msg->data, msg->header.size);
+            memcpy((void *)&ctx.baudrate, msg->data, msg->header.size);
             set_baudrate(ctx.baudrate);
             break;
         default:
             // set VM data
             CURRENTMODULE.msg_pt = msg;
             msg->header.cmd -= PROTOCOL_CMD_NB;
-            ctx.luos_cb(&CURRENTMODULE, CURRENTMODULE.msg_pt);
+            ctx.luos_cb((vm_t *)&CURRENTMODULE, CURRENTMODULE.msg_pt);
             break;
         }
     }
@@ -375,7 +375,7 @@ void msg_complete(msg_t *msg)
         CURRENTMODULE.msg_pt = msg;
         // call callback
         msg->header.cmd -= PROTOCOL_CMD_NB;
-        ctx.luos_cb(&CURRENTMODULE, CURRENTMODULE.msg_pt);
+        ctx.luos_cb((vm_t *)&CURRENTMODULE, CURRENTMODULE.msg_pt);
         msg->header.cmd += PROTOCOL_CMD_NB;
     }
     ctx.data_cb = get_header;

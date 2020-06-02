@@ -68,7 +68,7 @@ void robus_init(RX_CB callback)
 void robus_modules_clear(void)
 {
     // Clear vm table
-    memset(ctx.vm_table, 0, sizeof(vm_t) * MAX_VM_NUMBER);
+    memset((void *)ctx.vm_table, 0, sizeof(vm_t) * MAX_VM_NUMBER);
     // Reset the number of created modules
     ctx.vm_number = 0;
 }
@@ -89,7 +89,7 @@ vm_t *robus_module_create(unsigned char type)
     // Initialize dead module detection
     ctx.vm_table[ctx.vm_number].dead_module_spotted = 0;
     // Return the freshly initialized vm pointer.
-    return &ctx.vm_table[ctx.vm_number++];
+    return (vm_t *)&ctx.vm_table[ctx.vm_number++];
 }
 
 unsigned char robus_send(vm_t *vm, msg_t *msg)
