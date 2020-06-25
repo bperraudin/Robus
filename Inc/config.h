@@ -23,6 +23,10 @@
 #define MAX_DATA_MSG_SIZE 128
 #define MAX_MULTICAST_ADDRESS 1
 
+#ifndef NBR_NAK_RETRY
+#define NBR_NAK_RETRY 10
+#endif
+
 #ifndef MAX_VM_NUMBER
 #define MAX_VM_NUMBER 20
 #endif

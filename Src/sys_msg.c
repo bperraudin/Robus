@@ -102,7 +102,7 @@ ack_restart:
                     ctx.data_cb = get_header;
                     get_header(&vm->msg_pt->ack);
                 }
-                if (nbr_nak_retry < 10)
+                if (nbr_nak_retry < NBR_NAK_RETRY)
                 {
                     timeout();
                     for (volatile unsigned int tempo = 0; tempo < (COLLISION_TIMER * (nbr_nak_retry)); tempo++)
