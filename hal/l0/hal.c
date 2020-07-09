@@ -40,6 +40,18 @@ void USART1_IRQHandler(void)
     }
 }
 
+char HAL_is_tx_lock(void)
+{
+    if (ctx.tx_lock)
+    {
+        return 1;
+    }
+    else
+    {
+        return (READ_BIT(USART1->ISR, USART_ISR_BUSY) == (USART_ISR_BUSY));
+    }
+}
+
 /**
  * \fn HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
  * \brief PTP interrupt management

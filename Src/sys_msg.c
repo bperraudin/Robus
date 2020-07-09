@@ -186,10 +186,10 @@ unsigned char transmit(unsigned char *data, unsigned short size)
     return 0;
 }
 
-void wait_tx_unlock(void)
+void wait_tx_unlock(void) // TODO : This function could be in HAL and replace HAL_is_tx_lock. By the way timeout management here is shity
 {
     volatile int timeout = 0;
-    while (ctx.tx_lock && (timeout < 64000))
+    while (HAL_is_tx_lock() && (timeout < 64000))
     {
         timeout++;
     }

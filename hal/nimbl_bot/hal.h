@@ -31,5 +31,6 @@ void set_PTP(branch_t branch);
 void reset_PTP(branch_t branch);
 unsigned char get_PTP(branch_t branch);
 void reverse_detection(branch_t branch);
+char HAL_is_tx_lock(void);
 
 #endif /* _HAL_H_ */
