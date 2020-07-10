@@ -155,14 +155,14 @@ unsigned char transmit(unsigned char *data, unsigned short size)
     ctx.tx_data = data;
     hal_enable_irq();
     // re-lock the transmission
-    ctx.tx_lock = TRUE;
-    if (ctx.collision)
+    if (ctx.collision | HAL_is_tx_lock())
     {
         // We receive something during our configuration, stop this transmission
         hal_disable_tx();
         ctx.collision = FALSE;
         return 1;
     }
+    ctx.tx_lock = TRUE;
     // Try to detect a collision during the "col_check_data_num" first bytes
     if (hal_transmit(data, col_check_data_num))
     {
